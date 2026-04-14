@@ -315,7 +315,12 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
   const breadboards = useProjectStore((s) => s.breadboards);
   const updateComponentPosition = useProjectStore((s) => s.updateComponentPosition);
   const setComponentPinState = useProjectStore((s) => s.setComponentPinState);
-  const gridSize = useCanvasStore((s) => s.gridSize);
+  const gridSize              = useCanvasStore((s) => s.gridSize);
+  const selectedComponentId   = useCanvasStore((s) => s.selectedComponentId);
+  const setSelectedComponentId = useCanvasStore((s) => s.setSelectedComponentId);
+  const setContextMenu        = useCanvasStore((s) => s.setContextMenu);
+
+  const isSelected = selectedComponentId === comp.id;
 
   // Touchscreen is rendered and dragged entirely by TouchscreenDisplayWrapper in KonvaCanvas
   if (comp.definitionId === 'touchscreen-7') return null;
@@ -340,6 +345,26 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
     updateComponentPosition(comp.id, { x: snapped.x, y: snapped.y });
   }, [comp.id, breadboards, gridSize, updateComponentPosition]);
 
+  const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true; // prevent stage click from immediately deselecting
+    setSelectedComponentId(isSelected ? null : comp.id);
+    setContextMenu(null);
+  }, [comp.id, isSelected, setSelectedComponentId, setContextMenu]);
+
+  const handleContextMenu = useCallback((e: Konva.KonvaEventObject<PointerEvent>) => {
+    e.evt.preventDefault();
+    e.cancelBubble = true;
+    setSelectedComponentId(comp.id);
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const container = stage.container().getBoundingClientRect();
+    setContextMenu({
+      x: e.evt.clientX - container.left,
+      y: e.evt.clientY - container.top,
+      componentId: comp.id,
+    });
+  }, [comp.id, setSelectedComponentId, setContextMenu]);
+
   /** Find which GPIO pin is connected to this button via wires/breadboard and update the mock */
   const updateButtonGpio = useCallback((value: 0 | 1) => {
     const s = useProjectStore.getState();
@@ -363,7 +388,23 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
   }, [comp.id, setComponentPinState, updateButtonGpio]);
 
   return (
-    <Group x={comp.position.x} y={comp.position.y} draggable onDragEnd={handleDragEnd}>
+    <Group
+      x={comp.position.x} y={comp.position.y}
+      draggable
+      onDragEnd={handleDragEnd}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+    >
+      {/* Selection highlight ring — drawn behind everything */}
+      {isSelected && (
+        <Rect
+          x={-10} y={-30} width={60} height={60}
+          stroke="#22c55e" strokeWidth={1.5}
+          dash={[4, 3]} cornerRadius={4}
+          fill="rgba(34,197,94,0.06)"
+          listening={false}
+        />
+      )}
       {isLED           && <LEDShape comp={comp} />}
       {isRGBLed        && <RGBLedShape comp={comp} />}
       {isButton        && <ButtonShape comp={comp} onPress={handlePress} onRelease={handleRelease} />}

@@ -3,6 +3,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { Stage, Layer, Line, Rect, Text } from 'react-konva';
 import type Konva from 'konva';
+import { Trash2 } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useCanvasStore } from '@/stores/canvasStore';
 import BoardRenderer from './BoardRenderer';
@@ -35,9 +36,13 @@ export default function KonvaCanvas() {
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [mounted, setMounted] = useState(false);
 
-  const viewport = useCanvasStore((s) => s.viewport);
-  const setViewport = useCanvasStore((s) => s.setViewport);
-  const gridSize = useCanvasStore((s) => s.gridSize);
+  const viewport              = useCanvasStore((s) => s.viewport);
+  const setViewport           = useCanvasStore((s) => s.setViewport);
+  const gridSize              = useCanvasStore((s) => s.gridSize);
+  const contextMenu           = useCanvasStore((s) => s.contextMenu);
+  const setContextMenu        = useCanvasStore((s) => s.setContextMenu);
+  const setSelectedComponentId = useCanvasStore((s) => s.setSelectedComponentId);
+  const removeComponent       = useProjectStore((s) => s.removeComponent);
 
   // Mark as mounted
   useEffect(() => {
@@ -106,9 +111,14 @@ export default function KonvaCanvas() {
     [setViewport]
   );
 
-  // Stage click for wiring (Shift+click starts/completes wire)
+  // Stage click: deselect component & close context menu, then handle wiring
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // Clicking empty canvas deselects everything
+      if (e.target === e.target.getStage()) {
+        setSelectedComponentId(null);
+        setContextMenu(null);
+      }
       if (!e.evt.shiftKey) return;
       const stage = stageRef.current;
       if (!stage) return;
@@ -180,6 +190,32 @@ export default function KonvaCanvas() {
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+      {/* Right-click context menu */}
+      {contextMenu && (
+        <div
+          style={{ position: 'absolute', left: contextMenu.x, top: contextMenu.y, zIndex: 100 }}
+          className="rounded-xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden min-w-[160px] py-1"
+          onMouseLeave={() => setContextMenu(null)}
+        >
+          <button
+            onClick={() => {
+              removeComponent(contextMenu.componentId);
+              setSelectedComponentId(null);
+              setContextMenu(null);
+            }}
+            className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+          >
+            <Trash2 className="h-4 w-4" /> Delete Component
+          </button>
+          <div className="h-px bg-border mx-2 my-1" />
+          <button
+            onClick={() => setContextMenu(null)}
+            className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-muted-foreground hover:bg-accent transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <Stage
         ref={stageRef}
         width={size.width}

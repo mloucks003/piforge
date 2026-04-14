@@ -124,21 +124,35 @@ export default function WiringInteractionLayer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isDrawing, cancelWire]);
 
-  // Handle Delete key to remove selected wire
-  const selectedWireId = useWiringStore((s) => s.selectedWireId);
-  const removeWire = useProjectStore((s) => s.removeWire);
-  const selectWire = useWiringStore((s) => s.selectWire);
+  // Handle Delete/Backspace key to remove selected wire OR selected component
+  const selectedWireId        = useWiringStore((s) => s.selectedWireId);
+  const removeWire            = useProjectStore((s) => s.removeWire);
+  const selectWire            = useWiringStore((s) => s.selectWire);
+  const selectedComponentId   = useCanvasStore((s) => s.selectedComponentId);
+  const setSelectedComponentId = useCanvasStore((s) => s.setSelectedComponentId);
+  const setContextMenu        = useCanvasStore((s) => s.setContextMenu);
+  const removeComponent       = useProjectStore((s) => s.removeComponent);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedWireId) {
-        removeWire(selectedWireId);
-        selectWire(null);
+      const tag = (e.target as HTMLElement).tagName;
+      // Don't fire when typing in an input/textarea
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedWireId) {
+          removeWire(selectedWireId);
+          selectWire(null);
+        } else if (selectedComponentId) {
+          removeComponent(selectedComponentId);
+          setSelectedComponentId(null);
+          setContextMenu(null);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWireId, removeWire, selectWire]);
+  }, [selectedWireId, removeWire, selectWire, selectedComponentId, removeComponent, setSelectedComponentId, setContextMenu]);
 
   // Always listen so wire mode clicks are captured; use cursor to indicate mode
   return (

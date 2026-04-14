@@ -189,8 +189,16 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
   removeComponent: (id) =>
     set((s) => {
-      const { [id]: _, ...rest } = s.components;
-      return { components: rest };
+      const { [id]: _, ...restComponents } = s.components;
+      // Also remove every wire that touches this component
+      const restWires = Object.fromEntries(
+        Object.entries(s.wires).filter(([, w]) => {
+          const touchesComp = (ref: typeof w.startPinRef) =>
+            ref.type === 'component' && ref.componentId === id;
+          return !touchesComp(w.startPinRef) && !touchesComp(w.endPinRef);
+        })
+      );
+      return { components: restComponents, wires: restWires };
     }),
 
   updateComponentPosition: (id, position) =>
