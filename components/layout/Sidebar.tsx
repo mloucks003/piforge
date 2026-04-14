@@ -1,16 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Search, Plus, Package, FolderOpen, GraduationCap, ChevronRight, Clock, Lock } from 'lucide-react';
+import { Search, Plus, Package, FolderOpen, ChevronRight, Clock, Lock } from 'lucide-react';
 import SensorControls from './SensorControls';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore, isPro } from '@/stores/authStore';
 import { getComponentDefinition } from '@/lib/components';
 import { projects } from '@/lib/projects';
-import { tutorials } from '@/lib/tutorials';
-import { useTutorialStore } from '@/stores/tutorialStore';
 
-type Tab = 'parts' | 'projects' | 'learn';
+type Tab = 'parts' | 'projects';
 
 const COMPONENT_ENTRIES = [
   // ── Output ──────────────────────────────────────────────────────
@@ -37,8 +35,6 @@ const COMPONENT_ENTRIES = [
 
 // Projects free users can access
 const FREE_PROJECT_IDS = new Set(['blink-led', 'button-led', 'traffic-light']);
-// Tutorials free users can access
-const FREE_TUTORIAL_IDS = new Set(['blink', 'button']);
 
 const DIFF_STYLES: Record<string, string> = {
   beginner:     'bg-green-500/10 text-green-400',
@@ -54,8 +50,6 @@ export default function Sidebar() {
   const addComponent  = useProjectStore((s) => s.addComponent);
   const addBreadboard = useProjectStore((s) => s.addBreadboard);
   const setCode       = useProjectStore((s) => s.setCode);
-  const startTutorial = useTutorialStore((s) => s.start);
-  const activeTutorial = useTutorialStore((s) => s.active);
   const user      = useAuthStore((s) => s.user);
   const openModal = useAuthStore((s) => s.openModal);
   const userIsPro = isPro(user);
@@ -89,7 +83,7 @@ export default function Sidebar() {
     <div className="flex flex-col flex-1 min-h-0">
       {/* Tab bar */}
       <div className="flex shrink-0 border-b border-border">
-        {([['parts','Parts',Package],['projects','Projects',FolderOpen],['learn','Learn',GraduationCap]] as const).map(([id, label, Icon]) => (
+        {([['parts','Parts',Package],['projects','Projects',FolderOpen]] as const).map(([id, label, Icon]) => (
           <button key={id} onClick={() => setTab(id)}
             className={`flex flex-1 items-center justify-center gap-1 py-2 text-xs font-medium transition-colors border-b-2 ${tab===id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
             <Icon className="h-3.5 w-3.5" />{label}
@@ -242,42 +236,6 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* ── LEARN ── */}
-      {tab === 'learn' && (
-        <div className="flex-1 overflow-y-auto p-2 space-y-2">
-          <p className="px-1 py-1 text-[10px] text-muted-foreground">Step-by-step guided projects that walk you through wiring and code.</p>
-          {!userIsPro && (
-            <button onClick={() => openModal('promo')}
-              className="w-full flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 px-3 py-2 text-left hover:bg-blue-500/10 transition-colors">
-              <Lock className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-              <div>
-                <p className="text-[10px] font-semibold text-blue-400">Pro unlocks all tutorials</p>
-                <p className="text-[9px] text-muted-foreground">Free plan includes 2 beginner tutorials.</p>
-              </div>
-            </button>
-          )}
-          {tutorials.map(t => {
-            const locked = !userIsPro && !FREE_TUTORIAL_IDS.has(t.id);
-            return (
-              <button key={t.id}
-                onClick={() => locked ? openModal('promo') : (!activeTutorial && startTutorial(t))}
-                disabled={!locked && !!activeTutorial}
-                className={`w-full rounded-lg border bg-muted/20 px-3 py-2.5 text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${locked ? 'border-border/40 opacity-60 hover:bg-blue-500/10' : 'border-border hover:bg-accent'}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${DIFF_STYLES[t.difficulty]}`}>{t.difficulty}</span>
-                  <span className="text-[10px] text-muted-foreground">{t.estimatedMinutes} min · {t.steps.length} steps</span>
-                  {locked && <Lock className="h-3 w-3 text-blue-400 ml-auto" />}
-                </div>
-                <div className="text-xs font-semibold text-foreground">{t.title}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{t.description}</div>
-              </button>
-            );
-          })}
-          {activeTutorial && (
-            <p className="text-[10px] text-yellow-400 text-center px-2">Tutorial in progress — finish or stop it first.</p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

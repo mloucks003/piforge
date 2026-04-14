@@ -7,8 +7,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import CanvasArea from '@/components/layout/CanvasArea';
 import RightPanel from '@/components/layout/RightPanel';
 import Console from '@/components/layout/Console';
-import TutorialPanel from '@/components/tutorials/TutorialPanel';
-import TutorialLauncher from '@/components/tutorials/TutorialLauncher';
+
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function LabPage() {
@@ -27,7 +26,6 @@ export default function LabPage() {
             <button onClick={() => setLeftOpen(false)} className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-accent transition-colors" aria-label="Collapse sidebar">
               <PanelLeftClose className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
-            <TutorialLauncher />
             <Sidebar />
           </div>
         ) : (
@@ -68,7 +66,6 @@ export default function LabPage() {
           </button>
         )}
 
-        <TutorialPanel />
       </div>
     </div>
   );

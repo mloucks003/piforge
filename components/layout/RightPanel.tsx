@@ -2,13 +2,14 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench } from 'lucide-react';
+import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, GraduationCap } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAIStore } from '@/stores/aiStore';
 import { templates } from '@/lib/templates/index';
 import { resolveCircuit } from '@/lib/simulation/circuit-resolver';
 import { getComponentDefinition } from '@/lib/components';
 import AIPanel from '@/components/ai/AIPanel';
+import LearnTab from '@/components/tutorials/LearnTab';
 
 // Configure Monaco to load workers from CDN — avoids Next.js/Turbopack worker issues
 const MonacoEditor = dynamic(
@@ -29,7 +30,7 @@ const MonacoEditor = dynamic(
   }
 );
 
-type Tab = 'editor' | 'properties' | 'ai';
+type Tab = 'editor' | 'properties' | 'ai' | 'learn';
 
 function PropertiesTab() {
   const components      = useProjectStore((s) => s.components);
@@ -263,6 +264,7 @@ export default function RightPanel() {
   const TABS = [
     ['editor', 'Editor', Code],
     ['properties', 'Circuit', Cpu],
+    ['learn', 'Learn', GraduationCap],
     ['ai', 'AI', Sparkles],
   ] as const;
 
@@ -321,6 +323,12 @@ export default function RightPanel() {
         )}
 
         {activeTab === 'properties' && <PropertiesTab />}
+
+        {activeTab === 'learn' && (
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+            <LearnTab />
+          </div>
+        )}
 
         {activeTab === 'ai' && (
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
