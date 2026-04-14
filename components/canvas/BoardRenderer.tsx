@@ -332,7 +332,12 @@ export default function BoardRenderer() {
   const hdrH = (hdrY2 - hdrY) + PR * 2 + 10;
 
   return (
-    <Group x={boardPosition.x} y={boardPosition.y} draggable onDragEnd={(e) => { useProjectStore.getState().setBoardPosition({ x: e.target.x(), y: e.target.y() }); }}>
+    <Group
+      x={boardPosition.x} y={boardPosition.y}
+      draggable
+      onDragMove={(e) => { useProjectStore.getState().setBoardPosition({ x: e.target.x(), y: e.target.y() }); }}
+      onDragEnd={(e) => { useProjectStore.getState().setBoardPosition({ x: e.target.x(), y: e.target.y() }); }}
+    >
       {/* ── drop shadow ── */}
       <Rect x={4} y={4} width={W} height={H} fill="rgba(0,0,0,0.5)" cornerRadius={5} />
 

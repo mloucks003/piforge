@@ -122,12 +122,20 @@ const SingleBreadboard = React.memo(function SingleBreadboard({
   x,
   y,
   onDragEnd,
+  onDragMove,
 }: {
   id: string;
   x: number;
   y: number;
   onDragEnd: (id: string, pos: { x: number; y: number }) => void;
+  onDragMove: (id: string, pos: { x: number; y: number }) => void;
 }) {
+  const handleDrag = useCallback(
+    (e: Konva.KonvaEventObject<DragEvent>) => {
+      onDragMove(id, { x: e.target.x(), y: e.target.y() });
+    },
+    [id, onDragMove]
+  );
   const handleDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
       onDragEnd(id, { x: e.target.x(), y: e.target.y() });
@@ -136,7 +144,7 @@ const SingleBreadboard = React.memo(function SingleBreadboard({
   );
 
   return (
-    <Group x={x} y={y} draggable onDragEnd={handleDragEnd}>
+    <Group x={x} y={y} draggable onDragMove={handleDrag} onDragEnd={handleDragEnd}>
       {/* Drop shadow */}
       <Rect x={3} y={3} width={BB_WIDTH} height={BB_HEIGHT} fill="rgba(0,0,0,0.25)" cornerRadius={4} />
 
@@ -197,6 +205,14 @@ export default function BreadboardRenderer() {
     [updateBreadboardPosition]
   );
 
+  // Update store every drag frame so wires follow in real-time
+  const handleDragMove = useCallback(
+    (id: string, pos: { x: number; y: number }) => {
+      updateBreadboardPosition(id, pos);
+    },
+    [updateBreadboardPosition]
+  );
+
   const bbList = Object.values(breadboards);
   if (bbList.length === 0) return null;
 
@@ -209,6 +225,7 @@ export default function BreadboardRenderer() {
           x={bb.position.x}
           y={bb.position.y}
           onDragEnd={handleDragEnd}
+          onDragMove={handleDragMove}
         />
       ))}
     </>

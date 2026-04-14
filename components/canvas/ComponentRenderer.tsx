@@ -337,6 +337,11 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
   const isPotentiometer= comp.definitionId === 'potentiometer';
   const isPIR          = comp.definitionId === 'pir-sensor';
 
+  const handleDragMove = useCallback((e: Konva.KonvaEventObject<DragEvent>) => {
+    // Update store every frame so wires follow the component in real-time
+    updateComponentPosition(comp.id, { x: e.target.x(), y: e.target.y() });
+  }, [comp.id, updateComponentPosition]);
+
   const handleDragEnd = useCallback((e: Konva.KonvaEventObject<DragEvent>) => {
     const pos = { x: e.target.x(), y: e.target.y() };
     const snapped = snapToPosition(pos, breadboards, gridSize, 15);
@@ -391,6 +396,7 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
     <Group
       x={comp.position.x} y={comp.position.y}
       draggable
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
