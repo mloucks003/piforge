@@ -1,0 +1,13 @@
+{
+  "id": "servo",
+  "name": "Servo Motor (SG90)",
+  "category": "motor",
+  "pins": [
+    { "id": "vcc",    "label": "VCC (5V)", "type": "power",  "position": { "x": 0, "y": 0 }, "direction": "in" },
+    { "id": "gnd",    "label": "GND",      "type": "ground", "position": { "x": 8, "y": 0 }, "direction": "in" },
+    { "id": "signal", "label": "PWM",      "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 48, "height": 40, "states": {} },
+  "simulation": { "type": "pwm", "handler": "angular-servo", "properties": { "minAngle": -90, "maxAngle": 90 } },
+  "defaultProperties": { "angle": 0 }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "dht22",
+  "name": "DHT22 Temp/Humidity",
+  "category": "sensor",
+  "pins": [
+    { "id": "vcc",  "label": "VCC",  "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "data", "label": "Data", "type": "signal", "position": { "x": 8,  "y": 0 }, "direction": "bidirectional" },
+    { "id": "nc",   "label": "NC",   "type": "data",   "position": { "x": 16, "y": 0 }, "direction": "bidirectional" },
+    { "id": "gnd",  "label": "GND",  "type": "ground", "position": { "x": 24, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 36, "height": 36, "states": {} },
+  "simulation": { "type": "digital-input", "handler": "dht22", "properties": {} },
+  "defaultProperties": {}
+}

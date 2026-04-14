@@ -1,0 +1,28 @@
+{
+  "id": "buzzer",
+  "name": "Piezo Buzzer",
+  "category": "buzzer",
+  "pins": [
+    {
+      "id": "positive",
+      "label": "Positive (+)",
+      "type": "signal",
+      "position": { "x": 0, "y": 0 },
+      "direction": "in"
+    },
+    {
+      "id": "negative",
+      "label": "Negative (−)",
+      "type": "ground",
+      "position": { "x": 7.62, "y": 0 },
+      "direction": "out"
+    }
+  ],
+  "visual": { "width": 14, "height": 10, "states": {} },
+  "simulation": {
+    "type": "digital-output",
+    "handler": "buzzer",
+    "properties": {}
+  },
+  "defaultProperties": {}
+}

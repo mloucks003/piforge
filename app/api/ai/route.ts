@@ -1,0 +1,154 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'edge'; // Use edge runtime for streaming
+
+interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface AIRequestBody {
+  messages: ChatMessage[];
+  code?: string;
+  components?: string;
+  wiring?: string;
+  consoleErrors?: string;
+  mode?: 'chat' | 'analyze' | 'fix';
+}
+
+function buildSystemPrompt(body: AIRequestBody): string {
+  const contextParts: string[] = [];
+
+  if (body.code?.trim()) {
+    contextParts.push(`## Current Python Code\n\`\`\`python\n${body.code}\n\`\`\``);
+  }
+  if (body.components?.trim()) {
+    contextParts.push(`## Placed Components\n${body.components}`);
+  }
+  if (body.wiring?.trim()) {
+    contextParts.push(`## Wiring Connections\n${body.wiring}`);
+  }
+  if (body.consoleErrors?.trim()) {
+    contextParts.push(`## Console Output / Errors\n\`\`\`\n${body.consoleErrors}\n\`\`\``);
+  }
+
+  const modeInstructions: Record<string, string> = {
+    analyze: `You are performing a CODE ANALYSIS. Review the code for:
+1. Bugs or logic errors
+2. Incorrect GPIO pin usage or API misuse
+3. Missing imports or undefined variables
+4. Blocking calls that should be async in PiForge's browser runtime
+5. Best practices for gpiozero / RPi.GPIO
+Format your response with clear sections: ✅ What's correct, ⚠️ Issues found, 💡 Suggestions.`,
+    fix: `You are performing an AUTO-FIX. Based on the console errors and code, provide:
+1. A clear explanation of what caused the error
+2. The corrected Python code (complete, ready to paste)
+3. An explanation of each change made
+Format: brief diagnosis → corrected code block → explanation.`,
+    chat: `You are a helpful assistant. Answer concisely and practically. When showing code, use Python code blocks.`,
+  };
+
+  const basePrompt = `You are PiForge AI, an expert embedded systems and Raspberry Pi assistant built into the PiForge virtual lab.
+
+PiForge is a browser-based Raspberry Pi simulator that runs real Python via Pyodide. Supported libraries:
+- \`gpiozero\`: LED, Button, Buzzer, PWMLED, RGBLED, AngularServo, Servo, Motor, Robot, DistanceSensor, MotionSensor
+- \`RPi.GPIO\`: Full GPIO control (BCM mode)
+- \`pygame\`: For the virtual 7" touchscreen display
+- \`Adafruit_DHT\`: DHT11/DHT22 temperature & humidity
+- \`time\`, \`math\`, \`random\`, \`json\`
+
+IMPORTANT PiForge-specific rules:
+- All blocking calls (time.sleep, button.wait_for_press, etc.) work normally — PiForge patches them to be async internally
+- GPIO pins use BCM numbering
+- The Pi 5 board has 40 GPIO pins; pins 6,9,14,20,25,30,34,39 are GND
+
+${modeInstructions[body.mode ?? 'chat']}
+
+${contextParts.length > 0 ? `---\n## Project Context\n${contextParts.join('\n\n')}` : ''}`;
+
+  return basePrompt;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body: AIRequestBody = await req.json();
+
+    // Resolve API key: env variable takes priority, then user-supplied header
+    const apiKey = process.env.OPENAI_API_KEY || req.headers.get('x-api-key') || '';
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'No API key configured. Add your OpenAI API key in the AI panel settings.' },
+        { status: 401 }
+      );
+    }
+
+    const systemPrompt = buildSystemPrompt(body);
+
+    const openaiMessages = [
+      { role: 'system', content: systemPrompt },
+      ...body.messages.filter((m) => m.role !== 'system'),
+    ];
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: openaiMessages,
+        stream: true,
+        max_tokens: 2048,
+        temperature: 0.3,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const msg = (err as { error?: { message?: string } }).error?.message ?? `OpenAI error ${response.status}`;
+      return NextResponse.json({ error: msg }, { status: response.status });
+    }
+
+    // Stream OpenAI's SSE response directly to the client
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    const encoder = new TextEncoder();
+
+    (async () => {
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          // Parse SSE lines and extract delta content
+          for (const line of chunk.split('\n')) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) await writer.write(encoder.encode(delta));
+            } catch { /* skip malformed lines */ }
+          }
+        }
+      } finally {
+        await writer.close();
+      }
+    })();
+
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "pir-sensor",
+  "name": "PIR Motion Sensor",
+  "category": "sensor",
+  "pins": [
+    { "id": "vcc", "label": "VCC",  "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "out", "label": "OUT",  "type": "signal", "position": { "x": 8,  "y": 0 }, "direction": "out" },
+    { "id": "gnd", "label": "GND",  "type": "ground", "position": { "x": 16, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 32, "height": 32, "states": {} },
+  "simulation": { "type": "digital-input", "handler": "pir-sensor", "properties": {} },
+  "defaultProperties": {}
+}

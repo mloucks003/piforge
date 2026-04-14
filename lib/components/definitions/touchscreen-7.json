@@ -1,0 +1,21 @@
+{
+  "id": "touchscreen-7",
+  "name": "7\" DSI Touchscreen",
+  "category": "touchscreen",
+  "pins": [
+    {
+      "id": "dsi",
+      "label": "DSI Ribbon",
+      "type": "data",
+      "position": { "x": 0, "y": 0 },
+      "direction": "bidirectional"
+    }
+  ],
+  "visual": { "width": 400, "height": 240, "states": {} },
+  "simulation": {
+    "type": "display",
+    "handler": "pygame-display",
+    "properties": { "width": 800, "height": 480 }
+  },
+  "defaultProperties": {}
+}

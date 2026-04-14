@@ -1,0 +1,13 @@
+{
+  "id": "dc-motor",
+  "name": "DC Motor",
+  "category": "motor",
+  "pins": [
+    { "id": "in1", "label": "IN1 (Forward)", "type": "signal", "position": { "x": 0, "y": 0 }, "direction": "in" },
+    { "id": "in2", "label": "IN2 (Reverse)", "type": "signal", "position": { "x": 8, "y": 0 }, "direction": "in" },
+    { "id": "gnd", "label": "GND",           "type": "ground", "position": { "x": 16, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 40, "height": 40, "states": {} },
+  "simulation": { "type": "digital-output", "handler": "dc-motor", "properties": {} },
+  "defaultProperties": { "speed": 0, "direction": "stop" }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "rgb-led",
+  "name": "RGB LED",
+  "category": "led",
+  "pins": [
+    { "id": "red",    "label": "Red",    "type": "signal", "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "green",  "label": "Green",  "type": "signal", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "blue",   "label": "Blue",   "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" },
+    { "id": "cathode","label": "GND",    "type": "ground", "position": { "x": 24, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 36, "height": 32, "states": {} },
+  "simulation": { "type": "digital-output", "handler": "rgb-led", "properties": {} },
+  "defaultProperties": {}
+}

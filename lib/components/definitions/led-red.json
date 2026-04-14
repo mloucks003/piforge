@@ -1,0 +1,41 @@
+{
+  "id": "led-red",
+  "name": "Red LED",
+  "category": "led",
+  "pins": [
+    {
+      "id": "anode",
+      "label": "Anode (+)",
+      "type": "signal",
+      "position": { "x": 0, "y": 0 },
+      "direction": "in"
+    },
+    {
+      "id": "cathode",
+      "label": "Cathode (−)",
+      "type": "ground",
+      "position": { "x": 7.62, "y": 0 },
+      "direction": "out"
+    }
+  ],
+  "visual": {
+    "width": 10,
+    "height": 14,
+    "states": {
+      "off": "led-off",
+      "on": "led-on"
+    }
+  },
+  "simulation": {
+    "type": "digital-output",
+    "handler": "led",
+    "properties": {
+      "forwardVoltage": 2.0,
+      "maxCurrent": 20
+    }
+  },
+  "defaultProperties": {
+    "color": "red",
+    "brightness": 1.0
+  }
+}

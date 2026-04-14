@@ -1,0 +1,38 @@
+{
+  "id": "resistor",
+  "name": "Resistor (330Ω)",
+  "category": "passive",
+  "pins": [
+    {
+      "id": "pin1",
+      "label": "Pin 1",
+      "type": "signal",
+      "position": { "x": 0, "y": 0 },
+      "direction": "bidirectional"
+    },
+    {
+      "id": "pin2",
+      "label": "Pin 2",
+      "type": "signal",
+      "position": { "x": 15.24, "y": 0 },
+      "direction": "bidirectional"
+    }
+  ],
+  "visual": {
+    "width": 20,
+    "height": 8,
+    "states": {}
+  },
+  "simulation": {
+    "type": "passive",
+    "handler": "resistor",
+    "properties": {
+      "resistance": 330,
+      "tolerance": 5
+    }
+  },
+  "defaultProperties": {
+    "resistance": 330,
+    "tolerance": 5
+  }
+}

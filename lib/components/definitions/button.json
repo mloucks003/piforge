@@ -1,0 +1,39 @@
+{
+  "id": "button",
+  "name": "Tactile Button",
+  "category": "button",
+  "pins": [
+    {
+      "id": "pin1",
+      "label": "Pin 1 (A side)",
+      "type": "signal",
+      "position": { "x": 0, "y": 0 },
+      "direction": "bidirectional"
+    },
+    {
+      "id": "pin2",
+      "label": "Pin 2 (B side)",
+      "type": "signal",
+      "position": { "x": 15.24, "y": 0 },
+      "direction": "bidirectional"
+    }
+  ],
+  "visual": {
+    "width": 12,
+    "height": 12,
+    "states": {
+      "released": "button-released",
+      "pressed": "button-pressed"
+    }
+  },
+  "simulation": {
+    "type": "digital-input",
+    "handler": "button",
+    "properties": {
+      "debounceMs": 50
+    }
+  },
+  "defaultProperties": {
+    "pressed": false
+  }
+}

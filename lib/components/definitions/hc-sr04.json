@@ -1,0 +1,14 @@
+{
+  "id": "hc-sr04",
+  "name": "HC-SR04 Ultrasonic",
+  "category": "sensor",
+  "pins": [
+    { "id": "vcc",   "label": "VCC",  "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "trig",  "label": "Trig", "type": "signal", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "echo",  "label": "Echo", "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "out" },
+    { "id": "gnd",   "label": "GND",  "type": "ground", "position": { "x": 24, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 48, "height": 28, "states": {} },
+  "simulation": { "type": "digital-input", "handler": "distance-sensor", "properties": { "maxDistanceCm": 400 } },
+  "defaultProperties": {}
+}
