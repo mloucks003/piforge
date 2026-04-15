@@ -251,24 +251,35 @@ if _js_input_getter is not None:
     //     Guard with (?<!def\s) so the 'def funcName(' declaration itself is
     //     never turned into 'def await funcName('.
 
-    // 1. Standalone (non-method) functions: def name( NOT followed by self
+    // ── Make standalone helper functions async ──────────────────────────────────
+    // Rule: only convert `def name(` → `async def name(` when the first param
+    // is NOT `self`. Class methods (publish, subscribe, read, etc.) stay as
+    // regular def — they don't call time.sleep and must NOT return coroutines,
+    // because their call sites `obj.method()` are never awaited.
+    //
+    // If a class method truly needs sleep we leave that as a known limitation.
+
+    // 1. Collect standalone function names (first param is not 'self')
     const standaloneNames: string[] = [];
     for (const m of patched.matchAll(/^\s*def\s+(\w+)\s*\(\s*(?!self\b)/gm)) {
       standaloneNames.push(m[1]);
     }
 
-    // 2. All defs → async def
-    patched = patched.replace(/^(\s*)def\s+/gm, '$1async def ');
+    // 2. Only standalone defs → async def  (leave class methods untouched)
+    //    Match: def name( where the ( is NOT immediately followed by self
+    patched = patched.replace(
+      /^(\s*)(def\s+\w+\s*\()(\s*)(?!self\b)/gm,
+      '$1async $2$3'
+    );
 
-    // 3. Await call sites for standalone helpers only
+    // 3. Await call sites for standalone helpers
     for (const name of standaloneNames) {
-      // Strip any existing 'await name(' first (avoid doubling on re-run)
+      // Strip any existing 'await name(' first to avoid doubling on re-run
       patched = patched.replace(
         new RegExp(`\\bawait\\s+${name}\\s*\\(`, 'g'),
         `${name}(`
       );
-      // Re-add 'await' — but NOT on definition lines ('def name(')
-      // and NOT on method calls ('obj.name(')
+      // Add await — guard: not on a def line, not a method call (preceded by .)
       patched = patched.replace(
         new RegExp(`(?<!def\\s)(?<![.\\w])\\b${name}\\s*\\(`, 'g'),
         `await ${name}(`
