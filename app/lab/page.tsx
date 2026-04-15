@@ -8,6 +8,7 @@ import CanvasArea from '@/components/layout/CanvasArea';
 import RightPanel from '@/components/layout/RightPanel';
 import Console from '@/components/layout/Console';
 import GuidedTour from '@/components/tour/GuidedTour';
+import TutorialOverlay from '@/components/tour/TutorialOverlay';
 
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -20,6 +21,7 @@ export default function LabPage() {
     <div className="flex h-screen min-w-[1024px] flex-col">
       <AutoLoader />
       <GuidedTour />
+      <TutorialOverlay />
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}

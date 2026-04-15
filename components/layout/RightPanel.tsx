@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, GraduationCap } from 'lucide-react';
+import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAIStore } from '@/stores/aiStore';
 import { templates } from '@/lib/templates/index';
@@ -264,7 +264,7 @@ export default function RightPanel() {
   const TABS = [
     ['editor', 'Editor', Code],
     ['properties', 'Circuit', Cpu],
-    ['learn', 'Learn', GraduationCap],
+    ['learn', 'Docs', BookOpen],
     ['ai', 'AI', Sparkles],
   ] as const;
 

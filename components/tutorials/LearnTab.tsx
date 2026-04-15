@@ -1,9 +1,12 @@
 'use client';
 
-import { Lock, ChevronRight, Clock, CheckCircle2, Circle, PlayCircle, XCircle, SkipForward } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Lock, ChevronRight, Clock, CheckCircle2, Circle, PlayCircle, XCircle,
+         BookOpen, GraduationCap, Search, ChevronDown, SkipForward } from 'lucide-react';
 import { useTutorialStore } from '@/stores/tutorialStore';
 import { useAuthStore, isPro } from '@/stores/authStore';
 import { tutorials } from '@/lib/tutorials';
+import { DOC_SECTIONS, type DocSection, type DocArticle } from '@/lib/docs/content';
 
 const DIFF_STYLES: Record<string, string> = {
   beginner:     'bg-green-500/10 text-green-400',
@@ -11,9 +14,108 @@ const DIFF_STYLES: Record<string, string> = {
   advanced:     'bg-red-500/10 text-red-400',
 };
 
-const FREE_TUTORIAL_IDS = new Set(['blink', 'button']);
+const FREE_TUTORIAL_IDS = new Set(['blink-led', 'button-led']);
 
-export default function LearnTab() {
+// ── Docs sub-tab ────────────────────────────────────────────────────────────
+function DocsTab() {
+  const [query, setQuery]             = useState('');
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [openArticle, setOpenArticle] = useState<string | null>(null);
+
+  const q = query.toLowerCase().trim();
+
+  const filtered: DocSection[] = useMemo(() => {
+    if (!q) return DOC_SECTIONS;
+    return DOC_SECTIONS.map(sec => ({
+      ...sec,
+      articles: sec.articles.filter(a =>
+        a.title.toLowerCase().includes(q) || a.body.toLowerCase().includes(q)
+      ),
+    })).filter(sec => sec.articles.length > 0);
+  }, [q]);
+
+  // Auto-open first section when searching
+  const sectionsToShow = q ? filtered.map(s => s.id) : undefined;
+
+  function toggleSection(id: string) {
+    setOpenSection(prev => prev === id ? null : id);
+    setOpenArticle(null);
+  }
+  function toggleArticle(id: string) {
+    setOpenArticle(prev => prev === id ? null : id);
+  }
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Search */}
+      <div className="shrink-0 p-3 border-b border-border">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search docs…"
+            className="w-full rounded-lg border border-border bg-muted/40 pl-8 pr-3 py-1.5 text-xs outline-none focus:border-primary/60 transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Sections */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {filtered.map(sec => {
+          const isOpen = q ? (sectionsToShow?.includes(sec.id) ?? false) : openSection === sec.id;
+          return (
+            <div key={sec.id} className="border-b border-border/60">
+              <button
+                onClick={() => toggleSection(sec.id)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-accent/50 transition-colors group"
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <span>{sec.icon}</span>{sec.title}
+                </span>
+                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isOpen && (
+                <div className="bg-muted/10">
+                  {sec.articles.map(article => {
+                    const isArtOpen = openArticle === article.id;
+                    return (
+                      <div key={article.id} className="border-t border-border/40">
+                        <button
+                          onClick={() => toggleArticle(article.id)}
+                          className="w-full flex items-center justify-between pl-8 pr-4 py-2.5 text-left hover:bg-accent/40 transition-colors"
+                        >
+                          <span className="text-xs font-medium text-foreground/90">{article.title}</span>
+                          <ChevronRight className={`h-3 w-3 text-muted-foreground transition-transform shrink-0 ${isArtOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                        {isArtOpen && (
+                          <div className="pl-8 pr-4 pb-4 pt-1">
+                            <pre className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-wrap font-sans">{article.body}</pre>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+            <BookOpen className="h-8 w-8 opacity-30" />
+            <p className="text-xs">No results for "{query}"</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Tutorials sub-tab ────────────────────────────────────────────────────────
+function TutorialsTab() {
   const { active, currentStep, completed, start, advance, skipStep, stop } = useTutorialStore();
   const user      = useAuthStore((s) => s.user);
   const openModal = useAuthStore((s) => s.openModal);
@@ -161,6 +263,36 @@ export default function LearnTab() {
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// ── Root export: Tutorials | Docs tab switcher ───────────────────────────────
+export default function LearnTab() {
+  const [tab, setTab] = useState<'tutorials' | 'docs'>('tutorials');
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
+      {/* Sub-tab bar */}
+      <div className="shrink-0 flex border-b border-border">
+        <button
+          onClick={() => setTab('tutorials')}
+          className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2 ${tab === 'tutorials' ? 'border-green-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <GraduationCap className="h-3.5 w-3.5" /> Tutorials
+        </button>
+        <button
+          onClick={() => setTab('docs')}
+          className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2 ${tab === 'docs' ? 'border-blue-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <BookOpen className="h-3.5 w-3.5" /> Docs
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        {tab === 'tutorials' ? <TutorialsTab /> : <DocsTab />}
+      </div>
     </div>
   );
 }

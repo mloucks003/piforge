@@ -13,6 +13,8 @@ export interface TutorialStep {
   content: string;
   completionCondition: CompletionCondition;
   hints?: string[];
+  /** data-tour attribute of the UI element to spotlight during this step */
+  tourTarget?: string;
 }
 
 export interface TutorialDefinition {
