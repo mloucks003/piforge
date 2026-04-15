@@ -308,6 +308,138 @@ function PIRShape() {
   );
 }
 
+// ─── LCD 16×2 ─────────────────────────────────────────────────────────────────
+function LCD16x2Shape() {
+  return (
+    <Group>
+      <Rect x={0} y={0} width={80} height={36} fill="#1a3a1a" stroke="#2d5a2d" strokeWidth={1.5} cornerRadius={3} />
+      <Rect x={4} y={4} width={72} height={28} fill="#4a7c4e" cornerRadius={2} />
+      {Array.from({ length: 16 }).map((_, col) =>
+        [0, 1].map(row => (
+          <Rect key={`${row}-${col}`} x={6 + col * 4.4} y={6 + row * 13} width={3.5} height={10} fill="#2d5a2d" cornerRadius={0.5} opacity={0.6} />
+        ))
+      )}
+      <Text x={4} y={26} text="LCD 16×2 I2C" fontSize={4} fontFamily="monospace" fill="#7fbf7f" width={72} align="center" listening={false} />
+    </Group>
+  );
+}
+
+// ─── OLED SSD1306 ──────────────────────────────────────────────────────────────
+function OLEDShape() {
+  return (
+    <Group>
+      <Rect x={0} y={0} width={56} height={40} fill="#111" stroke="#333" strokeWidth={1.5} cornerRadius={4} />
+      <Rect x={4} y={4} width={48} height={28} fill="#000" cornerRadius={2} />
+      <Text x={4} y={10} text="OLED" fontSize={5} fontFamily="monospace" fill="#4488ff" width={48} align="center" listening={false} />
+      <Text x={4} y={18} text="128×64" fontSize={4} fontFamily="monospace" fill="#2255cc" width={48} align="center" listening={false} />
+      <Text x={4} y={33} text="SSD1306" fontSize={3.5} fontFamily="monospace" fill="#444" width={48} align="center" listening={false} />
+    </Group>
+  );
+}
+
+// ─── 7-Segment ────────────────────────────────────────────────────────────────
+function SevenSegShape({ comp }: { comp: PlacedComponent }) {
+  const segs = ['a','b','c','d','e','f','g'];
+  const states = comp.pinStates ?? {};
+  const on = (seg: string) => (states[seg]?.value ?? 0) !== 0;
+  const S = '#ff2200'; const O = '#2a0a00';
+  return (
+    <Group>
+      <Rect x={0} y={0} width={36} height={56} fill="#1a1a1a" stroke="#333" strokeWidth={1} cornerRadius={3} />
+      {/* a - top */}
+      <Rect x={8} y={4}  width={20} height={4} fill={on('a')?S:O} cornerRadius={1} />
+      {/* b - top-right */}
+      <Rect x={29} y={6}  width={4}  height={20} fill={on('b')?S:O} cornerRadius={1} />
+      {/* c - bottom-right */}
+      <Rect x={29} y={30} width={4}  height={20} fill={on('c')?S:O} cornerRadius={1} />
+      {/* d - bottom */}
+      <Rect x={8} y={48} width={20} height={4}  fill={on('d')?S:O} cornerRadius={1} />
+      {/* e - bottom-left */}
+      <Rect x={4}  y={30} width={4}  height={20} fill={on('e')?S:O} cornerRadius={1} />
+      {/* f - top-left */}
+      <Rect x={4}  y={6}  width={4}  height={20} fill={on('f')?S:O} cornerRadius={1} />
+      {/* g - middle */}
+      <Rect x={8} y={26} width={20} height={4}  fill={on('g')?S:O} cornerRadius={1} />
+    </Group>
+  );
+}
+
+// ─── Relay ────────────────────────────────────────────────────────────────────
+function RelayShape({ comp }: { comp: PlacedComponent }) {
+  const active = (comp.pinStates?.['signal']?.value ?? 0) !== 0;
+  return (
+    <Group>
+      <Rect x={0} y={0} width={56} height={40} fill="#1a2a4a" stroke="#2244aa" strokeWidth={1.5} cornerRadius={4} />
+      <Rect x={4} y={4} width={24} height={32} fill="#112233" stroke="#2244aa" strokeWidth={1} cornerRadius={2} />
+      <Circle x={16} y={20} radius={10} stroke="#4488cc" strokeWidth={2} fill="transparent" />
+      <Line points={[12,16,12,24,20,20,20,16,20,24]} stroke="#4488cc" strokeWidth={1.5} tension={0.5} />
+      <Rect x={32} y={8} width={20} height={10} fill={active ? '#22c55e' : '#444'} cornerRadius={2} />
+      <Rect x={32} y={22} width={20} height={10} fill="#333" cornerRadius={2} />
+      <Text x={0} y={32} text={active ? '● ON' : '○ OFF'} fontSize={4} fontFamily="monospace" fill={active?'#22c55e':'#666'} width={56} align="center" listening={false} />
+    </Group>
+  );
+}
+
+// ─── NeoPixel Strip ───────────────────────────────────────────────────────────
+function NeoPixelShape({ comp }: { comp: PlacedComponent }) {
+  const active = (comp.pinStates?.['din']?.value ?? 0) !== 0;
+  const colors = ['#ff0000','#ff8800','#ffff00','#00ff00','#00ffff','#0088ff','#8800ff','#ff00ff'];
+  return (
+    <Group>
+      <Rect x={0} y={0} width={96} height={24} fill="#1a1a1a" stroke="#333" strokeWidth={1} cornerRadius={3} />
+      {colors.map((c, i) => (
+        <Circle key={i} x={8 + i * 11} y={12} radius={4.5}
+          fill={active ? c : '#222'} stroke={active ? c : '#333'} strokeWidth={1}
+          shadowColor={active ? c : 'transparent'} shadowBlur={active ? 6 : 0} shadowOpacity={0.8} />
+      ))}
+    </Group>
+  );
+}
+
+// ─── Stepper + ULN2003 ────────────────────────────────────────────────────────
+function StepperShape({ comp }: { comp: PlacedComponent }) {
+  const step = Object.values(comp.pinStates ?? {}).filter(p => p.value).length;
+  return (
+    <Group>
+      <Rect x={0} y={0} width={60} height={60} fill="#1a1a2a" stroke="#334" strokeWidth={1.5} cornerRadius={4} />
+      <Circle x={30} y={30} radius={20} fill="#222" stroke="#4466aa" strokeWidth={2} />
+      <Circle x={30} y={30} radius={8} fill="#111" stroke="#2244aa" strokeWidth={1.5} />
+      {[0,1,2,3].map(i => {
+        const a = (i * 90 + step * 45) * Math.PI / 180;
+        return <Line key={i} points={[30, 30, 30 + Math.cos(a)*18, 30 + Math.sin(a)*18]} stroke="#4466aa" strokeWidth={2.5} lineCap="round" />;
+      })}
+      <Text x={0} y={52} text="STEPPER" fontSize={4} fontFamily="monospace" fill="#4466aa" width={60} align="center" listening={false} />
+    </Group>
+  );
+}
+
+// ─── Joystick ─────────────────────────────────────────────────────────────────
+function JoystickShape() {
+  return (
+    <Group>
+      <Rect x={0} y={0} width={48} height={48} fill="#1a1a1a" stroke="#333" strokeWidth={1.5} cornerRadius={6} />
+      <Circle x={24} y={24} radius={16} fill="#222" stroke="#555" strokeWidth={2} />
+      <Circle x={24} y={24} radius={8} fill="#444" stroke="#666" strokeWidth={1.5} />
+      <Circle x={24} y={24} radius={3} fill="#888" />
+      <Text x={0} y={40} text="JOY" fontSize={4} fontFamily="monospace" fill="#666" width={48} align="center" listening={false} />
+    </Group>
+  );
+}
+
+// ─── Capacitor ────────────────────────────────────────────────────────────────
+function CapacitorShape() {
+  return (
+    <Group>
+      <Rect x={4} y={2} width={12} height={24} fill="#4a6a2a" stroke="#6a9a3a" strokeWidth={1} cornerRadius={2} />
+      <Rect x={0} y={26} width={20} height={4} fill="#555" cornerRadius={1} />
+      <Line points={[10, 2, 10, -6]} stroke="#ccc" strokeWidth={1.5} />
+      <Line points={[10, 30, 10, 36]} stroke="#ccc" strokeWidth={1.5} />
+      <Text x={0} y={14} text="+" fontSize={6} fontFamily="monospace" fill="#aaffaa" width={20} align="center" listening={false} />
+      <Text x={0} y={38} text="100μF" fontSize={4} fontFamily="monospace" fill="#888" width={20} align="center" listening={false} />
+    </Group>
+  );
+}
+
 // Touchscreen display is fully handled by TouchscreenDisplayWrapper in KonvaCanvas
 // (draggable, interactive). Nothing rendered here.
 
@@ -325,17 +457,26 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
   // Touchscreen is rendered and dragged entirely by TouchscreenDisplayWrapper in KonvaCanvas
   if (comp.definitionId === 'touchscreen-7') return null;
 
-  const isLED          = comp.definitionId.startsWith('led-');
-  const isRGBLed       = comp.definitionId === 'rgb-led';
-  const isButton       = comp.definitionId === 'button';
-  const isResistor     = comp.definitionId === 'resistor';
-  const isBuzzer       = comp.definitionId === 'buzzer';
-  const isServo        = comp.definitionId === 'servo';
-  const isUltrasonic   = comp.definitionId === 'hc-sr04';
-  const isDHT22        = comp.definitionId === 'dht22';
-  const isDCMotor      = comp.definitionId === 'dc-motor';
-  const isPotentiometer= comp.definitionId === 'potentiometer';
-  const isPIR          = comp.definitionId === 'pir-sensor';
+  const id = comp.definitionId;
+  const isLED          = id.startsWith('led-');
+  const isRGBLed       = id === 'rgb-led';
+  const isButton       = id === 'button';
+  const isResistor     = id === 'resistor';
+  const isBuzzer       = id === 'buzzer';
+  const isServo        = id === 'servo';
+  const isUltrasonic   = id === 'hc-sr04';
+  const isDHT22        = id === 'dht22';
+  const isDCMotor      = id === 'dc-motor';
+  const isPotentiometer= id === 'potentiometer';
+  const isPIR          = id === 'pir-sensor';
+  const isLCD          = id === 'lcd-16x2';
+  const isOLED         = id === 'oled-ssd1306';
+  const isSevenSeg     = id === 'seven-segment';
+  const isRelay        = id === 'relay';
+  const isNeoPixel     = id === 'neopixel-8';
+  const isStepper      = id === 'stepper-uln';
+  const isJoystick     = id === 'joystick';
+  const isCapacitor    = id === 'capacitor';
 
   const handleDragMove = useCallback((e: Konva.KonvaEventObject<DragEvent>) => {
     // Update store every frame so wires follow the component in real-time
@@ -422,6 +563,14 @@ function SingleComponent({ comp }: { comp: PlacedComponent }) {
       {isDCMotor       && <DCMotorShape comp={comp} />}
       {isPotentiometer && <PotentiometerShape />}
       {isPIR           && <PIRShape />}
+      {isLCD           && <LCD16x2Shape />}
+      {isOLED          && <OLEDShape />}
+      {isSevenSeg      && <SevenSegShape comp={comp} />}
+      {isRelay         && <RelayShape comp={comp} />}
+      {isNeoPixel      && <NeoPixelShape comp={comp} />}
+      {isStepper       && <StepperShape comp={comp} />}
+      {isJoystick      && <JoystickShape />}
+      {isCapacitor     && <CapacitorShape />}
       {isLED && (
         <Text
           x={LEG_SPACING / 2 - 12} y={6}

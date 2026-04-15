@@ -37,14 +37,22 @@ function buildSystemPrompt(body: AIRequestBody): string {
 1. Bugs or logic errors
 2. Incorrect GPIO pin usage or API misuse
 3. Missing imports or undefined variables
-4. Blocking calls that should be async in PiForge's browser runtime
-5. Best practices for gpiozero / RPi.GPIO
+4. Best practices for gpiozero / RPi.GPIO
 Format your response with clear sections: ✅ What's correct, ⚠️ Issues found, 💡 Suggestions.`,
     fix: `You are performing an AUTO-FIX. Based on the console errors and code, provide:
 1. A clear explanation of what caused the error
 2. The corrected Python code (complete, ready to paste)
 3. An explanation of each change made
 Format: brief diagnosis → corrected code block → explanation.`,
+    generate: `You are a CODE GENERATOR for Raspberry Pi projects. The user will describe what they want to build.
+You must provide:
+1. **Project Overview** — brief description of what you will generate
+2. **Components Needed** — exact list of components and quantities
+3. **Wiring Guide** — step-by-step wiring instructions (format: ComponentPin → Pi GPIO BCM number)
+4. **Complete Python Code** — fully working, commented Python using gpiozero or RPi.GPIO, ready to paste
+5. **How to Run** — 1-2 sentences on running the project
+
+Keep code practical, well-commented, and use gpiozero where possible.`,
     chat: `You are a helpful assistant. Answer concisely and practically. When showing code, use Python code blocks.`,
   };
 

@@ -1,0 +1,14 @@
+{
+  "id": "neopixel-8",
+  "name": "NeoPixel Strip (8 LEDs)",
+  "category": "led",
+  "description": "WS2812B addressable RGB LED strip, 8 pixels. Control with rpi_ws281x or neopixel library.",
+  "pins": [
+    { "id": "vcc",    "label": "5V",    "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "gnd",    "label": "GND",   "type": "ground", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "din",    "label": "DIN",   "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 96, "height": 24, "states": {} },
+  "simulation": { "type": "digital-output", "handler": "neopixel", "properties": { "count": 8 } },
+  "defaultProperties": { "brightness": 1.0 }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "stepper-uln",
+  "name": "Stepper Motor + ULN2003",
+  "category": "motor",
+  "description": "28BYJ-48 stepper motor with ULN2003 driver board. 4-phase unipolar, 512 steps/rev. Use RPi.GPIO stepping sequences.",
+  "pins": [
+    { "id": "vcc",  "label": "VCC",  "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "gnd",  "label": "GND",  "type": "ground", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "in1",  "label": "IN1",  "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" },
+    { "id": "in2",  "label": "IN2",  "type": "signal", "position": { "x": 24, "y": 0 }, "direction": "in" },
+    { "id": "in3",  "label": "IN3",  "type": "signal", "position": { "x": 32, "y": 0 }, "direction": "in" },
+    { "id": "in4",  "label": "IN4",  "type": "signal", "position": { "x": 40, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 60, "height": 60, "states": {} },
+  "simulation": { "type": "digital-output", "handler": "stepper", "properties": { "stepsPerRev": 512 } },
+  "defaultProperties": { "speed": 10 }
+}

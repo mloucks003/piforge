@@ -14,13 +14,24 @@ import hcSr04Json from './definitions/hc-sr04.json';
 import dht22Json from './definitions/dht22.json';
 import dcMotorJson from './definitions/dc-motor.json';
 import potentiometerJson from './definitions/potentiometer.json';
-import pirSensorJson from './definitions/pir-sensor.json';
+import pirSensorJson    from './definitions/pir-sensor.json';
+import lcd16x2Json      from './definitions/lcd-16x2.json';
+import oledSsd1306Json  from './definitions/oled-ssd1306.json';
+import sevenSegmentJson from './definitions/seven-segment.json';
+import relayJson        from './definitions/relay.json';
+import neopixel8Json    from './definitions/neopixel-8.json';
+import stepperUlnJson   from './definitions/stepper-uln.json';
+import joystickJson     from './definitions/joystick.json';
+import capacitorJson    from './definitions/capacitor.json';
 
 const rawDefinitions = [
   ledRedJson, ledGreenJson, ledBlueJson, rgbLedJson,
   buttonJson, resistorJson, buzzerJson,
   touchscreen7Json,
   servoJson, hcSr04Json, dht22Json, dcMotorJson, potentiometerJson, pirSensorJson,
+  lcd16x2Json, oledSsd1306Json, sevenSegmentJson,
+  relayJson, neopixel8Json, stepperUlnJson,
+  joystickJson, capacitorJson,
 ];
 
 function loadDefinitions(): ComponentDefinition[] {

@@ -1,0 +1,13 @@
+{
+  "id": "capacitor",
+  "name": "Capacitor 100μF",
+  "category": "passive",
+  "description": "Electrolytic capacitor 100μF 16V. Used for power supply decoupling and filtering.",
+  "pins": [
+    { "id": "pos", "label": "+",   "type": "power",  "position": { "x": 0, "y": 0 }, "direction": "in" },
+    { "id": "neg", "label": "−",   "type": "ground", "position": { "x": 8, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 20, "height": 36, "states": {} },
+  "simulation": { "type": "passive", "handler": "capacitor", "properties": {} },
+  "defaultProperties": { "capacitance": 100 }
+}

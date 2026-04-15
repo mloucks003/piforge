@@ -7,7 +7,7 @@ export interface Point {
   y: number;
 }
 
-export type BoardModelId = 'pi4' | 'pi5';
+export type BoardModelId = 'pi4' | 'pi5' | 'arduino-uno';
 
 export interface PinState {
   mode: 'input' | 'output' | 'pwm' | 'alt';
@@ -97,6 +97,13 @@ export interface ComponentDefinition {
   pins: ComponentPinDef[];
 }
 
+// ---- Undo/redo snapshot ----
+export interface CircuitSnapshot {
+  components: Record<string, PlacedComponent>;
+  wires: Record<string, Wire>;
+  breadboards: Record<string, PlacedBreadboard>;
+}
+
 // ---- Store interface ----
 
 export interface ProjectState {
@@ -138,6 +145,12 @@ export interface ProjectState {
   setSimulationState: (state: SimulationState) => void;
   addConsoleEntry: (stream: ConsoleEntry['stream'], text: string) => void;
   clearConsole: () => void;
+
+  // ── Undo / Redo ──
+  past: CircuitSnapshot[];
+  future: CircuitSnapshot[];
+  undo: () => void;
+  redo: () => void;
 }
 
 const defaultPinState: PinState = {
@@ -151,6 +164,15 @@ const defaultPinState: PinState = {
 let nextId = 1;
 function uid(): string {
   return `id-${nextId++}-${Date.now().toString(36)}`;
+}
+
+/** Take a snapshot of circuit topology for undo/redo */
+function snap(s: ProjectState): CircuitSnapshot {
+  return { components: s.components, wires: s.wires, breadboards: s.breadboards };
+}
+/** Prepend snapshot to past stack (max 60), clear future */
+function pushPast(s: ProjectState): Partial<ProjectState> {
+  return { past: [...s.past.slice(-59), snap(s)], future: [] };
 }
 
 export const useProjectStore = create<ProjectState>((set) => ({
@@ -169,6 +191,21 @@ export const useProjectStore = create<ProjectState>((set) => ({
   simulationState: 'idle',
   consoleOutput: [],
 
+  past: [],
+  future: [],
+
+  undo: () => set((s) => {
+    if (s.past.length === 0) return s;
+    const previous = s.past[s.past.length - 1];
+    return { ...previous, past: s.past.slice(0, -1), future: [snap(s), ...s.future.slice(0, 59)] };
+  }),
+
+  redo: () => set((s) => {
+    if (s.future.length === 0) return s;
+    const next = s.future[0];
+    return { ...next, past: [...s.past.slice(-59), snap(s)], future: s.future.slice(1) };
+  }),
+
   addComponent: (def, position) => {
     const id = uid();
     const placed: PlacedComponent = {
@@ -181,16 +218,13 @@ export const useProjectStore = create<ProjectState>((set) => ({
         def.pins.map((p) => [p.id, { ...defaultPinState }])
       ),
     };
-    set((s) => ({
-      components: { ...s.components, [id]: placed },
-    }));
+    set((s) => ({ ...pushPast(s), components: { ...s.components, [id]: placed } }));
     return id;
   },
 
   removeComponent: (id) =>
     set((s) => {
       const { [id]: _, ...restComponents } = s.components;
-      // Also remove every wire that touches this component
       const restWires = Object.fromEntries(
         Object.entries(s.wires).filter(([, w]) => {
           const touchesComp = (ref: typeof w.startPinRef) =>
@@ -198,7 +232,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
           return !touchesComp(w.startPinRef) && !touchesComp(w.endPinRef);
         })
       );
-      return { components: restComponents, wires: restWires };
+      return { ...pushPast(s), components: restComponents, wires: restWires };
     }),
 
   updateComponentPosition: (id, position) =>
@@ -216,16 +250,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
   addBreadboard: (position, type = '830-point') => {
     const id = uid();
     const bb: PlacedBreadboard = { id, position, type };
-    set((s) => ({
-      breadboards: { ...s.breadboards, [id]: bb },
-    }));
+    set((s) => ({ ...pushPast(s), breadboards: { ...s.breadboards, [id]: bb } }));
     return id;
   },
 
   removeBreadboard: (id) =>
     set((s) => {
       const { [id]: _, ...rest } = s.breadboards;
-      return { breadboards: rest };
+      return { ...pushPast(s), breadboards: rest };
     }),
 
   updateBreadboardPosition: (id, position) =>
@@ -241,16 +273,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }),
 
   addWire: (wire) => {
-    set((s) => ({
-      wires: { ...s.wires, [wire.id]: wire },
-    }));
+    set((s) => ({ ...pushPast(s), wires: { ...s.wires, [wire.id]: wire } }));
     return wire.id;
   },
 
   removeWire: (id) =>
     set((s) => {
       const { [id]: _, ...rest } = s.wires;
-      return { wires: rest };
+      return { ...pushPast(s), wires: rest };
     }),
 
   setPinState: (pin, partial) =>

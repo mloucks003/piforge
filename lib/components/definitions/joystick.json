@@ -1,0 +1,16 @@
+{
+  "id": "joystick",
+  "name": "Analog Joystick",
+  "category": "sensor",
+  "description": "Dual-axis analog joystick with push button. VRx/VRy are 0-3.3V analog outputs; SW is digital push switch.",
+  "pins": [
+    { "id": "vcc", "label": "VCC", "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "gnd", "label": "GND", "type": "ground", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "vrx", "label": "VRx", "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "out" },
+    { "id": "vry", "label": "VRy", "type": "signal", "position": { "x": 24, "y": 0 }, "direction": "out" },
+    { "id": "sw",  "label": "SW",  "type": "signal", "position": { "x": 32, "y": 0 }, "direction": "out" }
+  ],
+  "visual": { "width": 48, "height": 48, "states": {} },
+  "simulation": { "type": "analog-input", "handler": "joystick", "properties": {} },
+  "defaultProperties": { "xValue": 512, "yValue": 512 }
+}

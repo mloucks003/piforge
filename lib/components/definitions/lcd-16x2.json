@@ -1,0 +1,15 @@
+{
+  "id": "lcd-16x2",
+  "name": "LCD 16×2 (I2C)",
+  "category": "display",
+  "description": "16-column 2-row character LCD with I2C backpack (PCF8574). Controls via smbus2 or RPLCD library.",
+  "pins": [
+    { "id": "vcc",  "label": "VCC",  "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "gnd",  "label": "GND",  "type": "ground", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "sda",  "label": "SDA",  "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" },
+    { "id": "scl",  "label": "SCL",  "type": "signal", "position": { "x": 24, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 80, "height": 36, "states": {} },
+  "simulation": { "type": "i2c-device", "handler": "lcd-16x2", "properties": { "address": 39 } },
+  "defaultProperties": { "text": "" }
+}

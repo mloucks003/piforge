@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type AIRole = 'user' | 'assistant' | 'system';
-export type AIMode = 'chat' | 'analyze' | 'fix';
+export type AIMode = 'chat' | 'analyze' | 'fix' | 'generate';
 
 export interface AIMessage {
   id: string;

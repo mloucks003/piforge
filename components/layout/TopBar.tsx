@@ -2,20 +2,13 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import {
-  Play,
-  Pause,
-  Square,
-  Save,
-  Share2,
-  Download,
-  Cpu,
-  Loader2,
-  Image,
-  FileText,
-  RefreshCw,
+  Play, Pause, Square, Save, Share2, Download,
+  Cpu, Loader2, Image, FileText, RefreshCw,
+  Undo2, Redo2, FolderOpen, Camera,
 } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useProjectManagerStore } from '@/stores/projectManagerStore';
 import { SimulationEngine } from '@/lib/simulation/engine';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/lib/serialization/serializer';
 import { GPIOMock } from '@/lib/simulation/gpio-mock';
@@ -51,8 +44,27 @@ export default function TopBar() {
   const simulationState = useProjectStore((s) => s.simulationState);
   const engineRef = useRef<SimulationEngine | null>(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
-  const user = useAuthStore((s) => s.user);
+  const user      = useAuthStore((s) => s.user);
   const openModal = useAuthStore((s) => s.openModal);
+  const undo      = useProjectStore((s) => s.undo);
+  const redo      = useProjectStore((s) => s.redo);
+  const past      = useProjectStore((s) => s.past);
+  const future    = useProjectStore((s) => s.future);
+  const openProjectManager = useProjectManagerStore((s) => s.openModal);
+  const saveProject        = useProjectManagerStore((s) => s.saveProject);
+
+  // Keyboard shortcuts: Ctrl+Z, Ctrl+Y/Shift+Z, Ctrl+S
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveProject('Quick Save'); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [undo, redo, saveProject]);
 
   // Load saved project from localStorage on mount
   useEffect(() => {
@@ -280,8 +292,24 @@ export default function TopBar() {
         )}
       </div>
 
-      {/* Right: save / share / export / user */}
+      {/* Right: undo/redo / save / share / export / user */}
       <div className="flex items-center gap-2">
+        {/* ── Undo / Redo ── */}
+        <div className="flex items-center gap-0.5 pr-2 border-r border-border">
+          <button onClick={undo} disabled={past.length === 0} title="Undo (Ctrl+Z)"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-30">
+            <Undo2 className="h-4 w-4" />
+          </button>
+          <button onClick={redo} disabled={future.length === 0} title="Redo (Ctrl+Y)"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-30">
+            <Redo2 className="h-4 w-4" />
+          </button>
+        </div>
+        {/* ── Project Manager ── */}
+        <button onClick={openProjectManager} title="Project Manager (Ctrl+S to quick-save)"
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+          <FolderOpen className="h-4 w-4" />
+        </button>
         <button
           onClick={handleSave}
           className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"

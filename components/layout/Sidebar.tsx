@@ -30,7 +30,19 @@ const COMPONENT_ENTRIES = [
   // ── Passive ─────────────────────────────────────────────────────
   { id: 'resistor',      name: 'Resistor 330Ω',    icon: '〰️', category: 'Passive',  pro: false },
   // ── Display ─────────────────────────────────────────────────────
-  { id: 'touchscreen-7', name: '7" Touchscreen',   icon: '📺', category: 'Display',  pro: true  },
+  { id: 'touchscreen-7',  name: '7" Touchscreen',      icon: '📺', category: 'Display',  pro: true  },
+  { id: 'lcd-16x2',       name: 'LCD 16×2 (I2C)',       icon: '🖥', category: 'Display',  pro: true  },
+  { id: 'oled-ssd1306',   name: 'OLED 128×64',          icon: '⬛', category: 'Display',  pro: true  },
+  { id: 'seven-segment',  name: '7-Segment Display',    icon: '🔢', category: 'Display',  pro: false },
+  // ── More Sensors ────────────────────────────────────────────────
+  { id: 'relay',          name: '5V Relay Module',      icon: '🔌', category: 'Sensors',  pro: true  },
+  { id: 'joystick',       name: 'Analog Joystick',      icon: '🕹', category: 'Sensors',  pro: true  },
+  // ── NeoPixel ────────────────────────────────────────────────────
+  { id: 'neopixel-8',     name: 'NeoPixel Strip (8)',   icon: '🌟', category: 'Output',   pro: true  },
+  // ── Motors & Robotics ───────────────────────────────────────────
+  { id: 'stepper-uln',    name: 'Stepper + ULN2003',    icon: '🔩', category: 'Robotics', pro: true  },
+  // ── Passive ─────────────────────────────────────────────────────
+  { id: 'capacitor',      name: 'Capacitor 100μF',      icon: '⚡', category: 'Passive',  pro: false },
 ];
 
 // Projects free users can access

@@ -1,0 +1,15 @@
+{
+  "id": "oled-ssd1306",
+  "name": "OLED 128×64 (SSD1306)",
+  "category": "display",
+  "description": "0.96\" I2C OLED display, 128×64 pixels. Use luma.oled or Adafruit SSD1306 library.",
+  "pins": [
+    { "id": "vcc",  "label": "VCC",  "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "gnd",  "label": "GND",  "type": "ground", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "scl",  "label": "SCL",  "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" },
+    { "id": "sda",  "label": "SDA",  "type": "signal", "position": { "x": 24, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 56, "height": 40, "states": {} },
+  "simulation": { "type": "i2c-device", "handler": "oled-ssd1306", "properties": { "address": 60 } },
+  "defaultProperties": {}
+}

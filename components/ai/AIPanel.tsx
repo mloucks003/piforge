@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import {
   Sparkles, Send, Trash2, Settings, Bug, Wrench,
-  MessageSquare, Loader2, AlertCircle, Key,
+  MessageSquare, Loader2, AlertCircle, Key, Wand2,
 } from 'lucide-react';
 import { useAIStore, type AIMode } from '@/stores/aiStore';
 import sendMessage from '@/lib/ai/sendMessage';
@@ -54,9 +54,10 @@ function ApiKeySettings({ onClose }: { onClose: () => void }) {
 // ── Main AIPanel ─────────────────────────────────────────────────────────────
 
 const MODE_META: Record<AIMode, { icon: React.ElementType; label: string; placeholder: string; buttonLabel: string }> = {
-  chat:    { icon: MessageSquare, label: 'Chat',    placeholder: 'Ask anything about your circuit or code…',  buttonLabel: 'Ask' },
-  analyze: { icon: Bug,           label: 'Analyze', placeholder: 'Ask about code quality, logic, or best practices…', buttonLabel: 'Analyze Code' },
-  fix:     { icon: Wrench,        label: 'Fix',     placeholder: 'Describe the problem or click Fix to auto-detect from console errors…', buttonLabel: 'Auto-Fix' },
+  chat:     { icon: MessageSquare, label: 'Chat',     placeholder: 'Ask anything about your circuit or code…', buttonLabel: 'Ask' },
+  analyze:  { icon: Bug,           label: 'Analyze',  placeholder: 'Ask about code quality, logic, or best practices…', buttonLabel: 'Analyze Code' },
+  fix:      { icon: Wrench,        label: 'Fix',      placeholder: 'Describe the problem or click Fix to auto-detect from console errors…', buttonLabel: 'Auto-Fix' },
+  generate: { icon: Wand2,         label: 'Generate', placeholder: 'Describe what you want to build, e.g. "a servo that sweeps left-right when a button is pressed"…', buttonLabel: 'Generate Project' },
 };
 
 export default function AIPanel() {
@@ -122,6 +123,7 @@ export default function AIPanel() {
           {activeMode === 'chat' && 'Ask anything about GPIO, Python, your circuit, or components.'}
           {activeMode === 'analyze' && 'AI reviews your code for bugs, bad patterns, and GPIO misuse — using your actual code and wiring as context.'}
           {activeMode === 'fix' && 'AI reads the console errors and your code to generate a corrected version. Click the button below to auto-fix.'}
+          {activeMode === 'generate' && 'Describe what you want to build — AI generates complete working Python code, a wiring guide, and a components list.'}
         </p>
       </div>
 
@@ -170,10 +172,10 @@ export default function AIPanel() {
 
       {/* Input area */}
       <div className="shrink-0 border-t border-border p-3 space-y-2">
-        {/* Quick action for analyze/fix */}
-        {(activeMode === 'analyze' || activeMode === 'fix') && (
-          <button onClick={() => send(undefined)} disabled={streaming}
-            className={`w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-colors disabled:opacity-50 ${activeMode === 'analyze' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white'}`}>
+        {/* Quick action for analyze/fix/generate */}
+        {(activeMode === 'analyze' || activeMode === 'fix' || activeMode === 'generate') && (
+          <button onClick={() => send(undefined)} disabled={streaming || (activeMode === 'generate' && !input.trim())}
+            className={`w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-colors disabled:opacity-50 ${activeMode === 'analyze' ? 'bg-blue-600 hover:bg-blue-500 text-white' : activeMode === 'generate' ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white'}`}>
             {streaming ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Icon className="h-3.5 w-3.5" />}
             {meta.buttonLabel}
           </button>

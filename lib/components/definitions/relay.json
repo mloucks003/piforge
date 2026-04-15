@@ -1,0 +1,14 @@
+{
+  "id": "relay",
+  "name": "5V Relay Module",
+  "category": "sensor",
+  "description": "Single-channel 5V relay module with optocoupler isolation. Controls mains or high-current loads.",
+  "pins": [
+    { "id": "vcc",    "label": "VCC",   "type": "power",  "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "gnd",    "label": "GND",   "type": "ground", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "signal", "label": "IN",    "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 56, "height": 40, "states": { "on": "#22c55e", "off": "#ef4444" } },
+  "simulation": { "type": "digital-output", "handler": "relay", "properties": { "activeHigh": false } },
+  "defaultProperties": {}
+}

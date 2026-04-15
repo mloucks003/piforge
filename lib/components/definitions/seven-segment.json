@@ -1,0 +1,20 @@
+{
+  "id": "seven-segment",
+  "name": "7-Segment Display",
+  "category": "display",
+  "description": "Single digit common-cathode 7-segment LED display. Segments a-g plus decimal point.",
+  "pins": [
+    { "id": "a",   "label": "A",   "type": "signal", "position": { "x": 0,  "y": 0 }, "direction": "in" },
+    { "id": "b",   "label": "B",   "type": "signal", "position": { "x": 8,  "y": 0 }, "direction": "in" },
+    { "id": "c",   "label": "C",   "type": "signal", "position": { "x": 16, "y": 0 }, "direction": "in" },
+    { "id": "d",   "label": "D",   "type": "signal", "position": { "x": 24, "y": 0 }, "direction": "in" },
+    { "id": "e",   "label": "E",   "type": "signal", "position": { "x": 32, "y": 0 }, "direction": "in" },
+    { "id": "f",   "label": "F",   "type": "signal", "position": { "x": 40, "y": 0 }, "direction": "in" },
+    { "id": "g",   "label": "G",   "type": "signal", "position": { "x": 48, "y": 0 }, "direction": "in" },
+    { "id": "dp",  "label": "DP",  "type": "signal", "position": { "x": 56, "y": 0 }, "direction": "in" },
+    { "id": "gnd", "label": "GND", "type": "ground", "position": { "x": 64, "y": 0 }, "direction": "in" }
+  ],
+  "visual": { "width": 36, "height": 56, "states": {} },
+  "simulation": { "type": "digital-output", "handler": "seven-segment", "properties": {} },
+  "defaultProperties": {}
+}
