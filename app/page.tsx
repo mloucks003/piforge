@@ -7,6 +7,8 @@ import {
   Cpu, Zap, Cable, Code, CircuitBoard, Users, Share2,
   BookOpen, Download, Wifi, Monitor, Layers, ArrowRight,
   GitFork, Star, Sparkles, GraduationCap, Globe,
+  Home, Building2, ChevronDown, Undo2, Redo2,
+  Play, Pause, Square, Search, HelpCircle,
 } from 'lucide-react';
 
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } };
@@ -96,141 +98,246 @@ export default function LandingPage() {
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="max-w-6xl mx-auto">
           <motion.div variants={fadeUp} className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">Your lab, in the browser</h2>
-            <p className="text-muted-foreground">Wire an obstacle-avoiding robot, write the Python, and watch it run — no hardware needed.</p>
+            <p className="text-muted-foreground">Build a Smart Home Hub — wire PIR motion, DHT22 temperature, and MQTT lighting. No hardware needed.</p>
           </motion.div>
+
           <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-background overflow-hidden shadow-2xl shadow-green-500/5">
-            {/* Title bar */}
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted/50">
-              <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/60" /><div className="w-3 h-3 rounded-full bg-yellow-500/60" /><div className="w-3 h-3 rounded-full bg-green-500/60" /></div>
-              <div className="flex-1 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <span className="px-2 py-0.5 rounded bg-green-500/10 text-green-400 text-[10px] font-medium flex items-center gap-1">Pi 5 ▾</span>
-                <span>PiForge Lab — Obstacle Avoiding Robot</span>
-                <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400 text-[10px] animate-pulse">● Running</span>
+
+            {/* ── Real Top Bar ── */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-background shrink-0">
+              <Cpu className="h-3.5 w-3.5 text-green-500" />
+              <span className="text-xs font-bold text-foreground mr-1">PiForge</span>
+              <div className="w-px h-3.5 bg-border" />
+              <div className="flex items-center gap-1 rounded border border-border bg-muted/60 px-2 py-0.5 text-[10px] text-foreground">
+                🖥️ Raspberry Pi 4 <ChevronDown className="h-2.5 w-2.5 text-muted-foreground ml-0.5" />
               </div>
-              <div className="w-16" />
+              <div className="w-px h-3.5 bg-border" />
+              <Undo2 className="h-3 w-3 text-muted-foreground" />
+              <Redo2 className="h-3 w-3 text-muted-foreground opacity-30" />
+              <div className="w-px h-3.5 bg-border" />
+              <div className="rounded p-1 bg-green-500/15"><Play className="h-3 w-3 text-green-400 fill-current" /></div>
+              <Pause className="h-3 w-3 text-muted-foreground opacity-30" />
+              <Square className="h-3 w-3 text-muted-foreground opacity-30" />
+              <div className="flex-1" />
+              <motion.span animate={{opacity:[1,0.4,1]}} transition={{duration:1.4,repeat:Infinity}}
+                className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" /> Running
+              </motion.span>
+              <div className="flex items-center gap-0.5 rounded border border-border bg-muted/40 p-0.5 ml-1">
+                <div className="rounded p-1 bg-green-500/20"><Home className="h-3 w-3 text-green-400" /></div>
+                <div className="rounded p-1 text-muted-foreground"><Building2 className="h-3 w-3" /></div>
+              </div>
+              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground ml-1" />
+              <div className="w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-[8px] font-bold text-green-400">M</div>
             </div>
-            <div className="grid grid-cols-12 h-[520px]">
-              {/* Sidebar */}
-              <div className="col-span-2 border-r border-border p-3 space-y-1.5 overflow-hidden">
-                <div className="rounded-md border border-dashed border-border px-2 py-1.5 text-[10px] text-center text-muted-foreground mb-2">+ Breadboard</div>
-                {[
-                  { cat: 'Robotics', items: ['⚙️ Servo (SG90)', '🔄 DC Motor ×2'] },
-                  { cat: 'Sensors',  items: ['📡 HC-SR04', '🌡️ DHT22', '👁️ PIR'] },
-                  { cat: 'Output',   items: ['🔴 Red LED', '🟢 Green LED', '🌈 RGB LED'] },
-                  { cat: 'Input',    items: ['⏺ Push Button'] },
-                ].map(({cat,items}) => (
-                  <div key={cat}>
-                    <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{cat}</div>
-                    {items.map(item => (
-                      <motion.div key={item} initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{delay:0.5}} className="text-[10px] text-foreground/70 px-2 py-1 rounded bg-muted/40 mb-0.5">{item}</motion.div>
-                    ))}
+
+            {/* ── Three-panel body ── */}
+            <div className="grid grid-cols-12 h-[500px]">
+
+              {/* Left Sidebar */}
+              <div className="col-span-2 border-r border-border flex flex-col bg-background overflow-hidden">
+                <div className="flex shrink-0 border-b border-border">
+                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-semibold border-b-2 border-green-500 text-foreground">Parts</div>
+                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">Projects</div>
+                </div>
+                <div className="px-2 pt-2 pb-1 shrink-0">
+                  <div className="rounded border border-dashed border-border py-1 text-[9px] text-center text-muted-foreground">+ Add Breadboard</div>
+                </div>
+                <div className="px-2 pb-1.5 shrink-0">
+                  <div className="flex items-center gap-1 rounded border border-border bg-muted/40 px-1.5 py-1">
+                    <Search className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                    <span className="text-[9px] text-muted-foreground">Search parts…</span>
                   </div>
-                ))}
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  {[
+                    { cat:'Output', icon:'💡', open:true,  items:['Red LED','Green LED','Buzzer','Relay'] },
+                    { cat:'Input',  icon:'⏺',  open:false, items:['Push Button'] },
+                    { cat:'Sensors',icon:'🌡️', open:true,  items:['DHT22 Temp/Humidity','PIR Motion Sensor','HC-SR04 Ultrasonic'] },
+                    { cat:'Displays',icon:'🖥️',open:false, items:['OLED SSD1306','LCD 16×2'] },
+                  ].map(({cat,icon,open,items}) => (
+                    <div key={cat} className="border-b border-border/50">
+                      <div className="flex items-center gap-1 px-2 py-1.5 text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        <span>{icon}</span>{cat}
+                        <ChevronDown className={`h-2.5 w-2.5 ml-auto transition-transform ${open ? 'rotate-180':''}`} />
+                      </div>
+                      {open && items.map(item => (
+                        <div key={item} className="flex items-center justify-between pl-4 pr-2 py-0.5 text-[9px] text-foreground/80">
+                          {item}<span className="text-muted-foreground">+</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Canvas */}
               <div className="col-span-7 bg-[#0a0f14] relative overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.06]" style={{backgroundImage:"radial-gradient(circle, #444 1px, transparent 1px)",backgroundSize:"16px 16px"}} />
+                <div className="absolute inset-0 opacity-[0.06]" style={{backgroundImage:'radial-gradient(circle,#555 1px,transparent 1px)',backgroundSize:'20px 20px'}} />
 
-                {/* Pi board */}
-                <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} transition={{delay:0.3,duration:0.6}}
-                  className="absolute top-4 left-6 w-48 h-32 rounded-md border border-green-700/60"
-                  style={{background:"linear-gradient(135deg, #166534 0%, #14532d 100%)"}}>
-                  <div className="absolute top-1.5 left-2 text-[7px] font-mono text-green-300/40">Raspberry Pi 5</div>
-                  <div className="absolute top-2 right-2 flex flex-col gap-[2px]">{Array.from({length:10}).map((_,i)=>(<div key={i} className="flex gap-[2px]"><div className="w-[4px] h-[4px] rounded-full bg-yellow-500/60" /><div className="w-[4px] h-[4px] rounded-full bg-blue-500/50" /></div>))}</div>
-                  <div className="absolute top-8 left-8 w-10 h-10 rounded bg-[#111] border border-[#222] flex items-center justify-center"><span className="text-[5px] font-mono text-white/20">BCM2712</span></div>
+                {/* Smart home floor plan overlay (faint) */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{opacity:0.08}}>
+                  <rect x="200" y="8" width="165" height="125" rx="4" fill="none" stroke="#22c55e" strokeWidth="1.5"/>
+                  <text x="208" y="24" fill="#22c55e" fontSize="7.5">🛋️ Living Room</text>
+                  <rect x="374" y="8" width="105" height="78" rx="4" fill="none" stroke="#fbbf24" strokeWidth="1.5"/>
+                  <text x="382" y="24" fill="#fbbf24" fontSize="7.5">🍳 Kitchen</text>
+                  <rect x="200" y="142" width="115" height="105" rx="4" fill="none" stroke="#818cf8" strokeWidth="1.5"/>
+                  <text x="208" y="158" fill="#818cf8" fontSize="7.5">🛏️ Bedroom</text>
+                </svg>
+
+                {/* Pi 4 board */}
+                <motion.div initial={{opacity:0,scale:0.92}} animate={{opacity:1,scale:1}} transition={{delay:0.3,duration:0.5}}
+                  className="absolute top-3 left-4 w-[148px] h-[98px] rounded-lg border border-green-700/70"
+                  style={{background:'linear-gradient(135deg,#166534 0%,#14532d 100%)'}}>
+                  <div className="absolute top-1.5 left-2 text-[6px] font-mono text-green-300/50 tracking-widest">RASPBERRY PI 4</div>
+                  <div className="absolute top-7 left-7 w-8 h-8 rounded bg-[#0a0a0a] border border-[#222] flex items-center justify-center">
+                    <span className="text-[4px] font-mono text-white/20">BCM2711</span>
+                  </div>
+                  <div className="absolute bottom-2 left-2 flex gap-1">
+                    <div className="w-5 h-3.5 rounded-sm bg-[#111] border border-[#333]"/>
+                    <div className="w-5 h-3.5 rounded-sm bg-[#111] border border-[#333]"/>
+                  </div>
+                  {/* GPIO header */}
+                  <div className="absolute top-2 right-1.5 flex flex-col gap-[2.5px]">
+                    {Array.from({length:20}).map((_,i)=>(
+                      <div key={i} className="flex gap-[2.5px]">
+                        <div className={`w-[3px] h-[3px] rounded-full ${i===0||i===1?'bg-red-400/80':i===5||i===8?'bg-orange-400/70':'bg-yellow-500/60'}`}/>
+                        <div className={`w-[3px] h-[3px] rounded-full ${i%4===0?'bg-blue-400/70':'bg-yellow-400/50'}`}/>
+                      </div>
+                    ))}
+                  </div>
                 </motion.div>
 
                 {/* Breadboard */}
-                <motion.div initial={{opacity:0,y:15}} animate={{opacity:1,y:0}} transition={{delay:0.7,duration:0.5}}
-                  className="absolute top-[165px] left-6 w-[310px] h-[60px] rounded border border-[#d4cfc4]"
-                  style={{background:"#f5f0e8"}}>
-                  <div className="absolute top-1 left-2 right-2 h-[5px] flex items-center"><div className="w-full h-px bg-red-400/40" /></div>
-                  <div className="absolute bottom-1 left-2 right-2 h-[5px] flex items-center"><div className="w-full h-px bg-blue-400/40" /></div>
-                </motion.div>
-
-                {/* HC-SR04 sensor */}
-                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.1}}
-                  className="absolute top-[175px] left-[240px] flex gap-1">
-                  <div className="w-8 h-8 rounded-sm border border-gray-600 bg-[#1a1a2e] flex items-center justify-center">
-                    <div className="w-5 h-5 rounded-full border-2 border-cyan-500/60 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-cyan-500/40" />
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-sm border border-gray-600 bg-[#1a1a2e] flex items-center justify-center">
-                    <div className="w-5 h-5 rounded-full border-2 border-cyan-500/60 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-cyan-500/40" />
-                    </div>
+                <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.7,duration:0.4}}
+                  className="absolute top-[112px] left-4 w-[275px] h-[48px] rounded border border-[#c8c3b5]"
+                  style={{background:'#f0ebe0'}}>
+                  <div className="absolute top-1.5 left-3 right-3 h-px bg-red-400/50"/>
+                  <div className="absolute bottom-1.5 left-3 right-3 h-px bg-blue-400/50"/>
+                  <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-around">
+                    {Array.from({length:30}).map((_,i)=>(
+                      <div key={i} className="w-[2px] h-[2px] rounded-full bg-gray-500/40"/>
+                    ))}
                   </div>
                 </motion.div>
 
-                {/* DC Motor left */}
+                {/* Green LED — glows when motion detected */}
+                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.1}} className="absolute top-[170px] left-[128px]">
+                  <motion.div
+                    animate={{boxShadow:['0 0 0px #22c55e','0 0 14px #22c55e80','0 0 0px #22c55e']}}
+                    transition={{duration:2,repeat:Infinity,delay:3,repeatDelay:2}}
+                    className="w-5 h-6 rounded-t-full border-2 border-green-500/80 bg-green-900/50 flex items-end justify-center pb-0.5">
+                    <div className="flex gap-[2px]"><div className="w-px h-3 bg-gray-500/60"/><div className="w-px h-3 bg-gray-500/60"/></div>
+                  </motion.div>
+                </motion.div>
+
+                {/* PIR sensor */}
+                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.2}}
+                  className="absolute top-[172px] left-[180px] w-8 h-7 rounded border border-cyan-700/60 bg-[#0d1b2a] flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full border border-cyan-500/60 flex items-center justify-center">
+                    <motion.div animate={{opacity:[0.3,1,0.3]}} transition={{duration:2.5,repeat:Infinity,delay:3}}
+                      className="w-2.5 h-2.5 rounded-full bg-cyan-500/50"/>
+                  </div>
+                </motion.div>
+
+                {/* DHT22 */}
                 <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.3}}
-                  className="absolute bottom-[80px] left-[60px] w-10 h-10 rounded-full border-2 border-gray-500 bg-[#1a1a1a] flex items-center justify-center">
-                  <motion.div animate={{rotate:360}} transition={{duration:1.5,repeat:Infinity,ease:'linear'}} className="w-5 h-5 rounded-full border-2 border-green-500/70" style={{borderTopColor:'transparent'}} />
-                </motion.div>
-                {/* DC Motor right */}
-                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.4}}
-                  className="absolute bottom-[80px] left-[130px] w-10 h-10 rounded-full border-2 border-gray-500 bg-[#1a1a1a] flex items-center justify-center">
-                  <motion.div animate={{rotate:360}} transition={{duration:1.5,repeat:Infinity,ease:'linear'}} className="w-5 h-5 rounded-full border-2 border-green-500/70" style={{borderTopColor:'transparent'}} />
-                </motion.div>
-
-                {/* Distance readout */}
-                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.5}}
-                  className="absolute top-[120px] right-8 rounded-lg border border-cyan-500/30 bg-cyan-500/5 px-3 py-2 text-center">
-                  <div className="text-[8px] text-cyan-400/70 mb-0.5">HC-SR04 Distance</div>
-                  <motion.div animate={{opacity:[1,0.4,1]}} transition={{duration:2,repeat:Infinity}} className="text-lg font-bold font-mono text-cyan-400">32 cm</motion.div>
-                  <div className="text-[8px] text-cyan-400/50">← obstacle detected</div>
+                  className="absolute top-[170px] left-[228px] w-7 h-9 rounded border border-blue-600/60 bg-[#071020] flex flex-col items-center justify-center gap-0.5">
+                  <span className="text-[5px] font-mono text-blue-400/80">DHT22</span>
+                  <div className="w-4 h-2.5 rounded-sm bg-blue-500/20 border border-blue-500/30"/>
                 </motion.div>
 
                 {/* Wires */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                  <motion.path d="M196,60 C196,130 200,165 200,165" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:1,duration:0.6}} />
-                  <motion.path d="M186,64 C186,130 180,165 180,165" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:1.1,duration:0.6}} />
-                  <motion.path d="M176,68 C176,140 240,160 240,175" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:1.2,duration:0.7}} />
-                  <motion.path d="M166,72 C166,145 265,160 265,175" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:1.3,duration:0.7}} />
-                  <motion.path d="M156,76 C156,150 75,170 75,310" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:1.5,duration:0.8}} />
-                  <motion.path d="M146,80 C146,150 145,170 145,310" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:1.6,duration:0.8}} />
+                  <motion.path d="M153,62 C153,100 136,165 136,170" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.8}} transition={{delay:1.5,duration:0.5}}/>
+                  <motion.path d="M150,58 C150,96 191,155 192,170" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.75}} transition={{delay:1.7,duration:0.55}}/>
+                  <motion.path d="M147,54 C147,92 236,150 236,168" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.45}} transition={{delay:1.9,duration:0.55}}/>
+                  <motion.path d="M155,66 C155,102 143,160 143,170" fill="none" stroke="#1c1c1c" strokeWidth="1.5" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.7}} transition={{delay:2.0,duration:0.4}}/>
+                  <motion.path d="M149,48 C149,88 188,148 188,170" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" initial={{pathLength:0,opacity:0}} animate={{pathLength:1,opacity:0.75}} transition={{delay:2.1,duration:0.5}}/>
                 </svg>
+
+                {/* Motion popup */}
+                <motion.div initial={{opacity:0,y:4}} animate={{opacity:[0,1,1,0]}} transition={{delay:3.5,duration:1,repeat:Infinity,repeatDelay:3}}
+                  className="absolute bottom-5 left-4 rounded-lg border border-green-500/40 bg-green-500/10 px-3 py-1.5">
+                  <div className="text-[9px] font-semibold text-green-400">🚶 Motion detected</div>
+                  <div className="text-[8px] text-green-400/70">Living room → GPIO17 HIGH</div>
+                </motion.div>
+
+                {/* DHT22 readout */}
+                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.5}}
+                  className="absolute top-3 right-3 rounded-lg border border-blue-500/30 bg-blue-500/5 px-2.5 py-2 text-center">
+                  <div className="text-[8px] text-blue-400/70 mb-0.5">DHT22</div>
+                  <motion.div animate={{opacity:[1,0.6,1]}} transition={{duration:3,repeat:Infinity}}
+                    className="text-sm font-bold font-mono text-blue-400">22.4°C</motion.div>
+                  <div className="text-[8px] text-blue-400/50">63% RH</div>
+                </motion.div>
               </div>
 
-              {/* Editor + Console */}
-              <div className="col-span-3 border-l border-border flex flex-col">
-                <div className="px-3 py-1.5 border-b border-border flex items-center gap-2">
-                  <span className="text-[10px] text-foreground border-b border-green-500 pb-0.5">Editor</span>
-                  <span className="text-[10px] text-muted-foreground">Properties</span>
+              {/* Right Panel */}
+              <div className="col-span-3 border-l border-border flex flex-col bg-background">
+                {/* Tabs — matches real lab exactly */}
+                <div className="flex shrink-0 border-b border-border">
+                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-medium border-b-2 border-primary text-foreground">
+                    <Code className="h-3 w-3"/>Editor
+                  </div>
+                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">
+                    <CircuitBoard className="h-3 w-3"/>Circuit
+                  </div>
+                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">
+                    <BookOpen className="h-3 w-3"/>Docs
+                  </div>
+                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">
+                    <Sparkles className="h-3 w-3 text-purple-400"/>
+                    <span>AI</span>
+                    <span className="text-[8px] px-1 rounded-full bg-purple-500/20 text-purple-400">AI</span>
+                  </div>
                 </div>
-                <div className="flex-1 bg-[#1e1e1e] p-3 font-mono text-[10px] leading-relaxed overflow-hidden">
+
+                {/* Monaco-style editor */}
+                <div className="flex-1 bg-[#1e1e1e] p-3 font-mono text-[10px] leading-[1.6] overflow-hidden min-h-0">
                   <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.5}}>
-                    <div><span className="text-purple-400">from</span> <span className="text-green-400">gpiozero</span> <span className="text-purple-400">import</span></div>
-                    <div className="pl-4"><span className="text-yellow-300">Robot, DistanceSensor</span></div>
-                    <div className="h-2" />
-                    <div>robot = <span className="text-yellow-300">Robot</span>(</div>
-                    <div className="pl-4">left=(<span className="text-cyan-400">7</span>,<span className="text-cyan-400">8</span>),</div>
-                    <div className="pl-4">right=(<span className="text-cyan-400">9</span>,<span className="text-cyan-400">10</span>))</div>
-                    <div>sensor = <span className="text-yellow-300">DistanceSensor</span>(</div>
-                    <div className="pl-4">echo=<span className="text-cyan-400">24</span>, trigger=<span className="text-cyan-400">23</span>)</div>
-                    <div className="h-2" />
-                    <div><span className="text-purple-400">while</span> <span className="text-cyan-400">True</span>:</div>
-                    <div className="pl-2"><span className="text-purple-400">if</span> sensor.distance &lt; <span className="text-cyan-400">0.3</span>:</div>
-                    <div className="pl-4">robot.<span className="text-yellow-300">backward</span>()</div>
-                    <div className="pl-4"><span className="text-yellow-300">sleep</span>(<span className="text-cyan-400">0.5</span>)</div>
-                    <div className="pl-4">robot.<span className="text-yellow-300">right</span>()</div>
-                    <div className="pl-2"><span className="text-purple-400">else</span>:</div>
-                    <div className="pl-4">robot.<span className="text-yellow-300">forward</span>()</div>
+                    <div className="text-green-400/60"># 🏠 Smart Home Hub</div>
+                    <div><span className="text-blue-400">import</span> <span className="text-yellow-200">RPi.GPIO</span> <span className="text-blue-400">as</span> GPIO</div>
+                    <div><span className="text-blue-400">import</span> time, json</div>
+                    <div className="h-1.5"/>
+                    <div>GPIO.<span className="text-yellow-300">setmode</span>(GPIO.BCM)</div>
+                    <div className="h-1.5"/>
+                    <div className="text-green-400/60"># Pins</div>
+                    <div>PIR_PIN  = <span className="text-cyan-400">4</span></div>
+                    <div>LIGHT    = <span className="text-cyan-400">17</span></div>
+                    <div>DHT_PIN  = <span className="text-cyan-400">22</span></div>
+                    <div className="h-1.5"/>
+                    <div>GPIO.<span className="text-yellow-300">setup</span>(PIR_PIN, GPIO.IN)</div>
+                    <div>GPIO.<span className="text-yellow-300">setup</span>(LIGHT,   GPIO.OUT)</div>
+                    <div className="h-1.5"/>
+                    <div><span className="text-blue-400">while</span> <span className="text-cyan-300">True</span>:</div>
+                    <div className="pl-3"><span className="text-blue-400">if</span> GPIO.<span className="text-yellow-300">input</span>(PIR_PIN):</div>
+                    <motion.div className="pl-6 text-green-300" animate={{opacity:[1,0.3,1]}} transition={{duration:1.2,repeat:Infinity,delay:3}}>
+                      GPIO.<span className="text-yellow-300">output</span>(LIGHT,<span className="text-cyan-400">1</span>)
+                    </motion.div>
+                    <div className="pl-6"><span className="text-green-400">print</span>(<span className="text-orange-300">&quot;Motion!&quot;</span>)</div>
+                    <div className="pl-3"><span className="text-blue-400">else</span>:</div>
+                    <div className="pl-6">GPIO.<span className="text-yellow-300">output</span>(LIGHT,<span className="text-cyan-400">0</span>)</div>
                   </motion.div>
                 </div>
-                <div className="h-[130px] border-t border-border shrink-0">
-                  <div className="px-3 py-1 border-b border-border text-[10px] text-muted-foreground">Console</div>
-                  <div className="p-2 font-mono text-[10px] space-y-0.5 overflow-hidden">
-                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.8}} className="text-muted-foreground italic">Pyodide 3.12 ready.</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.2}} className="text-green-400">▶ Robot moving forward…</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:[0,1,1,0.7]}} transition={{delay:3,duration:1.5,repeat:Infinity,repeatDelay:3}} className="text-yellow-400">⚠ Obstacle at 32 cm</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,1,0.7]}} transition={{delay:3.5,duration:1.5,repeat:Infinity,repeatDelay:3}} className="text-cyan-400">↩ Backing up + turning right</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,0,1,0.7]}} transition={{delay:4,duration:2,repeat:Infinity,repeatDelay:3}} className="text-green-400">▶ Robot moving forward…</motion.div>
+
+                {/* Console */}
+                <div className="h-[140px] border-t border-border shrink-0 flex flex-col">
+                  <div className="px-3 py-1 border-b border-border text-[9px] text-muted-foreground flex items-center gap-1.5">
+                    Console
+                    <motion.span animate={{opacity:[1,0,1]}} transition={{duration:1.2,repeat:Infinity}} className="text-green-400 text-[8px]">●</motion.span>
+                  </div>
+                  <div className="p-2 font-mono text-[10px] space-y-0.5 overflow-hidden flex-1">
+                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.5}} className="text-muted-foreground/70">Pyodide 3.12 ready.</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.0}} className="text-green-400">🏠 Smart Home Hub — Online</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.6}} className="text-blue-400">🌡️ Temp: 22.4°C · 63% RH</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:[0,1,1,0.7]}} transition={{delay:3.5,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-yellow-400">🚶 Motion — GPIO4 HIGH</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,1,0.8]}} transition={{delay:4.0,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-green-400">💡 Living room ON</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,0,1,0.7]}} transition={{delay:4.4,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-cyan-400">📤 MQTT: home/living_room</motion.div>
                   </div>
                 </div>
               </div>
+
             </div>
           </motion.div>
         </motion.div>
