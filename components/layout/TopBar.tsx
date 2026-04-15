@@ -4,8 +4,9 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import {
   Play, Pause, Square, Download,
   Cpu, Loader2, Image, FileText, RefreshCw,
-  Undo2, Redo2, FolderOpen,
+  Undo2, Redo2, FolderOpen, ChevronDown,
 } from 'lucide-react';
+import { BOARD_CATALOG } from '@/lib/boards';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useProjectManagerStore } from '@/stores/projectManagerStore';
@@ -45,6 +46,7 @@ export default function TopBar() {
   const simulationState = useProjectStore((s) => s.simulationState);
   const engineRef = useRef<SimulationEngine | null>(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false);
   const user      = useAuthStore((s) => s.user);
   const openModal = useAuthStore((s) => s.openModal);
   const undo      = useProjectStore((s) => s.undo);
@@ -200,29 +202,42 @@ export default function TopBar() {
           <span>PiForge</span>
         </div>
 
-        <div className="flex items-center rounded-md border border-border text-sm">
+        {/* Board selector dropdown */}
+        <div className="relative">
           <button
-            onClick={() => setBoardModel('pi4')}
-            className={`px-3 py-1 rounded-l-md transition-colors ${
-              boardModel === 'pi4'
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground hover:bg-accent/50'
-            }`}
-            aria-pressed={boardModel === 'pi4'}
+            onClick={() => setBoardMenuOpen(o => !o)}
+            className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent transition-colors"
           >
-            Pi 4
+            <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+            {BOARD_CATALOG.find(b => b.id === boardModel)?.name ?? boardModel}
+            <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-150 ${boardMenuOpen ? 'rotate-180' : ''}`} />
           </button>
-          <button
-            onClick={() => setBoardModel('pi5')}
-            className={`px-3 py-1 rounded-r-md transition-colors ${
-              boardModel === 'pi5'
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground hover:bg-accent/50'
-            }`}
-            aria-pressed={boardModel === 'pi5'}
-          >
-            Pi 5
-          </button>
+
+          {boardMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setBoardMenuOpen(false)} />
+              <div className="absolute left-0 top-full mt-1 z-40 w-52 rounded-lg border border-border bg-popover shadow-xl py-1 text-xs">
+                {(['raspberry-pi', 'arduino', 'pico'] as const).map(family => {
+                  const boards = BOARD_CATALOG.filter(b => b.family === family);
+                  const familyLabel = family === 'raspberry-pi' ? 'Raspberry Pi' : family === 'arduino' ? 'Arduino' : 'Microcontroller';
+                  return (
+                    <div key={family}>
+                      <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{familyLabel}</div>
+                      {boards.map(b => (
+                        <button key={b.id}
+                          onClick={() => { setBoardModel(b.id); setBoardMenuOpen(false); }}
+                          className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-accent ${boardModel === b.id ? 'text-primary font-semibold' : 'text-foreground'}`}
+                        >
+                          <span>{b.name}</span>
+                          <span className="text-[9px] text-muted-foreground font-mono">{b.lang}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

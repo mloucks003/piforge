@@ -1,0 +1,48 @@
+{
+  "id": "arduino-uno",
+  "name": "Arduino Uno R3",
+  "family": "arduino",
+  "dimensions": { "width": 68.6, "height": 53.3 },
+  "gpioHeader": [
+    { "pinNumber": 1,  "gpioNumber": 8,    "label": "D8",       "type": "gpio",   "altFunctions": [],        "position": { "x": 8.0,  "y": 2.0 } },
+    { "pinNumber": 2,  "gpioNumber": 9,    "label": "D9~",      "type": "pwm",    "altFunctions": ["PWM"],   "position": { "x": 10.54,"y": 2.0 } },
+    { "pinNumber": 3,  "gpioNumber": 10,   "label": "D10~",     "type": "pwm",    "altFunctions": ["PWM","SS"],  "position": { "x": 13.08,"y": 2.0 } },
+    { "pinNumber": 4,  "gpioNumber": 11,   "label": "D11~",     "type": "pwm",    "altFunctions": ["PWM","MOSI"],"position": { "x": 15.62,"y": 2.0 } },
+    { "pinNumber": 5,  "gpioNumber": 12,   "label": "D12",      "type": "spi",    "altFunctions": ["MISO"],  "position": { "x": 18.16,"y": 2.0 } },
+    { "pinNumber": 6,  "gpioNumber": 13,   "label": "D13",      "type": "spi",    "altFunctions": ["SCK"],   "position": { "x": 20.7, "y": 2.0 } },
+    { "pinNumber": 7,  "gpioNumber": null, "label": "GND",      "type": "ground", "altFunctions": [],        "position": { "x": 23.24,"y": 2.0 } },
+    { "pinNumber": 8,  "gpioNumber": null, "label": "AREF",     "type": "power",  "altFunctions": [],        "position": { "x": 25.78,"y": 2.0 } },
+    { "pinNumber": 9,  "gpioNumber": null, "label": "SDA",      "type": "i2c",    "altFunctions": ["A4"],    "position": { "x": 28.32,"y": 2.0 } },
+    { "pinNumber": 10, "gpioNumber": null, "label": "SCL",      "type": "i2c",    "altFunctions": ["A5"],    "position": { "x": 30.86,"y": 2.0 } },
+    { "pinNumber": 11, "gpioNumber": 7,    "label": "D7",       "type": "gpio",   "altFunctions": [],        "position": { "x": 36.0, "y": 2.0 } },
+    { "pinNumber": 12, "gpioNumber": 6,    "label": "D6~",      "type": "pwm",    "altFunctions": ["PWM"],   "position": { "x": 38.54,"y": 2.0 } },
+    { "pinNumber": 13, "gpioNumber": 5,    "label": "D5~",      "type": "pwm",    "altFunctions": ["PWM"],   "position": { "x": 41.08,"y": 2.0 } },
+    { "pinNumber": 14, "gpioNumber": 4,    "label": "D4",       "type": "gpio",   "altFunctions": [],        "position": { "x": 43.62,"y": 2.0 } },
+    { "pinNumber": 15, "gpioNumber": 3,    "label": "D3~",      "type": "pwm",    "altFunctions": ["PWM","INT1"],"position": { "x": 46.16,"y": 2.0 } },
+    { "pinNumber": 16, "gpioNumber": 2,    "label": "D2",       "type": "gpio",   "altFunctions": ["INT0"],  "position": { "x": 48.7, "y": 2.0 } },
+    { "pinNumber": 17, "gpioNumber": 1,    "label": "TX→",      "type": "uart",   "altFunctions": ["TXD"],   "position": { "x": 51.24,"y": 2.0 } },
+    { "pinNumber": 18, "gpioNumber": 0,    "label": "RX←",      "type": "uart",   "altFunctions": ["RXD"],   "position": { "x": 53.78,"y": 2.0 } },
+    { "pinNumber": 19, "gpioNumber": null, "label": "IOREF",    "type": "power",  "altFunctions": [],        "position": { "x": 8.0,  "y": 51.3} },
+    { "pinNumber": 20, "gpioNumber": null, "label": "RESET",    "type": "gpio",   "altFunctions": [],        "position": { "x": 10.54,"y": 51.3} },
+    { "pinNumber": 21, "gpioNumber": null, "label": "3.3V",     "type": "power",  "altFunctions": [],        "position": { "x": 13.08,"y": 51.3} },
+    { "pinNumber": 22, "gpioNumber": null, "label": "5V",       "type": "power",  "altFunctions": [],        "position": { "x": 15.62,"y": 51.3} },
+    { "pinNumber": 23, "gpioNumber": null, "label": "GND",      "type": "ground", "altFunctions": [],        "position": { "x": 18.16,"y": 51.3} },
+    { "pinNumber": 24, "gpioNumber": null, "label": "GND",      "type": "ground", "altFunctions": [],        "position": { "x": 20.7, "y": 51.3} },
+    { "pinNumber": 25, "gpioNumber": null, "label": "VIN",      "type": "power",  "altFunctions": [],        "position": { "x": 23.24,"y": 51.3} },
+    { "pinNumber": 26, "gpioNumber": 14,   "label": "A0",       "type": "analog", "altFunctions": [],        "position": { "x": 38.0, "y": 51.3} },
+    { "pinNumber": 27, "gpioNumber": 15,   "label": "A1",       "type": "analog", "altFunctions": [],        "position": { "x": 40.54,"y": 51.3} },
+    { "pinNumber": 28, "gpioNumber": 16,   "label": "A2",       "type": "analog", "altFunctions": [],        "position": { "x": 43.08,"y": 51.3} },
+    { "pinNumber": 29, "gpioNumber": 17,   "label": "A3",       "type": "analog", "altFunctions": [],        "position": { "x": 45.62,"y": 51.3} },
+    { "pinNumber": 30, "gpioNumber": 18,   "label": "A4",       "type": "analog", "altFunctions": ["SDA"],   "position": { "x": 48.16,"y": 51.3} },
+    { "pinNumber": 31, "gpioNumber": 19,   "label": "A5",       "type": "analog", "altFunctions": ["SCL"],   "position": { "x": 50.7, "y": 51.3} }
+  ],
+  "ports": [
+    { "id": "usb-b", "label": "USB-B", "type": "usb-b", "position": { "x": 0, "y": 16.0 }, "dimensions": { "width": 12.0, "height": 16.0 } }
+  ],
+  "mountingHoles": [
+    { "x": 2.5,  "y": 2.5  },
+    { "x": 66.0, "y": 7.7  },
+    { "x": 2.5,  "y": 50.8 },
+    { "x": 66.0, "y": 35.5 }
+  ]
+}

@@ -40,8 +40,8 @@ type ComponentEntry = typeof COMPONENT_ENTRIES[number];
 
 // Category display order & colours
 const CATEGORY_CONFIG: Record<string, { color: string; bg: string; defaultOpen: boolean }> = {
-  Output:   { color: 'text-green-400',  bg: 'bg-green-500/10',  defaultOpen: true  },
-  Input:    { color: 'text-blue-400',   bg: 'bg-blue-500/10',   defaultOpen: true  },
+  Output:   { color: 'text-green-400',  bg: 'bg-green-500/10',  defaultOpen: false },
+  Input:    { color: 'text-blue-400',   bg: 'bg-blue-500/10',   defaultOpen: false },
   Sensors:  { color: 'text-yellow-400', bg: 'bg-yellow-500/10', defaultOpen: false },
   Display:  { color: 'text-purple-400', bg: 'bg-purple-500/10', defaultOpen: false },
   Robotics: { color: 'text-orange-400', bg: 'bg-orange-500/10', defaultOpen: false },

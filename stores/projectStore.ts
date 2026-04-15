@@ -7,7 +7,7 @@ export interface Point {
   y: number;
 }
 
-export type BoardModelId = 'pi4' | 'pi5' | 'arduino-uno';
+export type BoardModelId = 'pi4' | 'pi5' | 'pi-zero-2w' | 'arduino-uno' | 'pico';
 
 export interface PinState {
   mode: 'input' | 'output' | 'pwm' | 'alt';
@@ -295,7 +295,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
   setLanguage: (language) => set({ language }),
 
-  setBoardModel: (model) => set({ boardModel: model }),
+  setBoardModel: (model) => set({
+    boardModel: model,
+    language: model === 'arduino-uno' ? 'cpp' : model === 'pico' ? 'micropython' : 'python',
+  }),
 
   setBoardPosition: (pos) => set({ boardPosition: pos }),
   setComponentPinState: (componentId, pinId, partial) =>

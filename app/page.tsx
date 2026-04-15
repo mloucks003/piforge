@@ -59,17 +59,17 @@ export default function LandingPage() {
         </div>
         <motion.div initial="hidden" animate="visible" variants={stagger} className="relative max-w-4xl mx-auto text-center">
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-4 py-1.5 text-sm text-green-400 mb-6">
-            <Sparkles className="h-4 w-4" /> Robotics &middot; Sensors &middot; Real Python &middot; Touchscreen
+            <Sparkles className="h-4 w-4" /> Pi 4 · Pi 5 · Pi Zero 2 W · Arduino Uno · Pi Pico W
           </motion.div>
           <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
             The Virtual{' '}
             <span className="bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
-              Raspberry Pi
+              Hardware
             </span>{' '}
             Laboratory
           </motion.h1>
           <motion.p variants={fadeUp} className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Build obstacle-avoiding robots, weather stations, and touchscreen dashboards. Wire up real components, write genuine Python, and watch your circuits run — all in your browser. No hardware required.
+            Simulate Raspberry Pi, Arduino, and Pico boards — all in your browser. Wire up sensors, motors, and displays. Write Python, MicroPython, or C++. Watch your circuits run without touching real hardware.
           </motion.p>
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/lab" className="rounded-xl bg-green-600 px-8 py-3.5 text-lg font-semibold text-white hover:bg-green-500 transition-all hover:scale-105 shadow-lg shadow-green-600/25 flex items-center gap-2">
@@ -103,7 +103,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted/50">
               <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/60" /><div className="w-3 h-3 rounded-full bg-yellow-500/60" /><div className="w-3 h-3 rounded-full bg-green-500/60" /></div>
               <div className="flex-1 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <span className="px-2 py-0.5 rounded bg-green-500/10 text-green-400 text-[10px] font-medium">Pi 5</span>
+                <span className="px-2 py-0.5 rounded bg-green-500/10 text-green-400 text-[10px] font-medium flex items-center gap-1">Pi 5 ▾</span>
                 <span>PiForge Lab — Obstacle Avoiding Robot</span>
                 <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400 text-[10px] animate-pulse">● Running</span>
               </div>
@@ -240,10 +240,10 @@ export default function LandingPage() {
       <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="border-y border-border bg-muted/30">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 px-6 py-10">
           {[
-            { num: '40', label: 'GPIO Pins Simulated' },
-            { num: '20+', label: 'Components' },
-            { num: '60fps', label: 'Canvas Performance' },
-            { num: '100%', label: 'Client-Side' },
+            { num: '5',    label: 'Boards Supported' },
+            { num: '22+',  label: 'Components' },
+            { num: '3',    label: 'Languages (Python, MicroPython, C++)' },
+            { num: '100%', label: 'Browser-Native' },
           ].map((s) => (
             <motion.div key={s.label} variants={fadeUp} className="text-center">
               <div className="text-3xl font-bold text-green-500">{s.num}</div>
@@ -262,9 +262,9 @@ export default function LandingPage() {
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: CircuitBoard, title: 'Pi 4 & Pi 5 Boards', desc: 'Toggle between accurate board models with correct GPIO pinouts, SoC chips, ports, and mounting holes.', color: 'text-green-500' },
+              { icon: CircuitBoard, title: '5 Boards Supported', desc: 'Pi 4, Pi 5, Pi Zero 2 W, Arduino Uno R3, and Pi Pico W — each with accurate pinouts, SoC chips, and ports. Switch instantly.', color: 'text-green-500' },
               { icon: Cable, title: 'Smart Wiring', desc: 'Click-drag bezier wires that auto-color by type. Short-circuit detection warns you before you fry anything.', color: 'text-blue-500' },
-              { icon: Code, title: 'Python in Browser', desc: 'GPIO Zero and RPi.GPIO run via Pyodide. No install, no server — your code executes instantly.', color: 'text-purple-500' },
+              { icon: Code, title: 'Python · MicroPython · C++', desc: 'GPIO Zero and RPi.GPIO via Pyodide for Pi boards. MicroPython for Pico. Arduino C++ sketch format. All in browser.', color: 'text-purple-500' },
               { icon: Zap, title: 'Real-Time I/O', desc: 'Set a pin HIGH and the LED glows. Click a button and your code reads the edge. Bidirectional, sub-50ms.', color: 'text-yellow-500' },
               { icon: Layers, title: 'Component Library', desc: 'LEDs, buttons, sensors, motors, displays, and touchscreens. JSON-based — add your own components.', color: 'text-orange-500' },
               { icon: Monitor, title: 'Programmable Displays', desc: 'Attach virtual touchscreens via simulated DSI/SPI. Render pygame output and send touch events back.', color: 'text-cyan-500' },
@@ -288,9 +288,9 @@ export default function LandingPage() {
           <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold text-center mb-16">Build a circuit in 60 seconds</motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
-              { step: '1', title: 'Place your board', desc: 'Drop a Pi 4 or Pi 5 onto the canvas. Add a breadboard and components from the palette.' },
+              { step: '1', title: 'Choose your board', desc: 'Pick from Pi 4, Pi 5, Pi Zero 2 W, Arduino Uno, or Pi Pico W. Drop a breadboard and add components from the palette.' },
               { step: '2', title: 'Wire it up', desc: 'Shift-click pins to draw wires. They auto-color and snap to connections. Short-circuit warnings keep you safe.' },
-              { step: '3', title: 'Write & run code', desc: 'Pick a template or write your own Python. Hit Play and watch your circuit come alive in real-time.' },
+              { step: '3', title: 'Write & run code', desc: 'Pick Python, MicroPython, or C++. Choose a template or write your own. Hit Play and watch your circuit come alive.' },
             ].map((s) => (
               <motion.div key={s.step} variants={fadeUp} className="text-center">
                 <div className="w-12 h-12 rounded-full bg-green-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4">{s.step}</div>

@@ -230,9 +230,114 @@ function Vias({ W, H }: { W: number; H: number }) {
   );
 }
 
+/* ── Draggable helpers ── */
+function makeDragHandlers(pos: { x: number; y: number }) {
+  return {
+    draggable: true as const,
+    onDragMove: (e: { target: { x: () => number; y: () => number } }) => useProjectStore.getState().setBoardPosition({ x: e.target.x(), y: e.target.y() }),
+    onDragEnd:  (e: { target: { x: () => number; y: () => number } }) => useProjectStore.getState().setBoardPosition({ x: e.target.x(), y: e.target.y() }),
+    x: pos.x, y: pos.y,
+  };
+}
+
+/* ── Arduino Uno Renderer ── */
+function ArduinoRenderer({ position }: { position: { x: number; y: number } }) {
+  const board = getBoardModel('arduino-uno');
+  const W = board.dimensions.width * S;
+  const H = board.dimensions.height * S;
+  const topPins = board.gpioHeader.filter(p => p.position.y < 10);
+  const botPins = board.gpioHeader.filter(p => p.position.y > 10);
+  return (
+    <Group {...makeDragHandlers(position)}>
+      <Rect x={4} y={4} width={W} height={H} fill="rgba(0,0,0,0.45)" cornerRadius={5} />
+      <Rect x={-1} y={-1} width={W + 2} height={H + 2} fill="#00424f" cornerRadius={5} />
+      <Rect x={0} y={0} width={W} height={H} fill="#007b96" cornerRadius={4} />
+      <Rect x={0} y={0} width={W} height={H} fill="#00919d" opacity={0.15} cornerRadius={4} />
+      {/* Silkscreen outline */}
+      <Rect x={3} y={3} width={W - 6} height={H - 6} fill="transparent" stroke={SILK} strokeWidth={0.3} opacity={0.1} cornerRadius={3} />
+      {/* ATmega328P */}
+      <ICChip x={W * 0.42} y={H * 0.3} w={55} h={55} label="ATmega328P" sublabel="8-bit AVR" />
+      {/* 16MHz crystal */}
+      <Rect x={W * 0.4} y={H * 0.62} width={12} height={7} fill="#c0c0c0" stroke="#888" strokeWidth={0.8} cornerRadius={2} />
+      <Text x={W * 0.4} y={H * 0.62 + 8} text="16 MHz" fontSize={4} fontFamily="monospace" fill={SILK_DIM} width={14} align="center" />
+      {/* USB-B connector */}
+      <Rect x={-8} y={H * 0.3} width={16} height={22} fill={METAL_LO} stroke={METAL_HI} strokeWidth={1.5} cornerRadius={2} />
+      <Rect x={-6} y={H * 0.3 + 3} width={10} height={16} fill="#111" cornerRadius={1} />
+      {/* Power LED */}
+      <BoardLED x={W * 0.28} y={H * 0.77} color="#22c55e" label="ON" />
+      {/* TX/RX LEDs */}
+      <BoardLED x={W * 0.28 + 8} y={H * 0.77} color="#f59e0b" label="TX" />
+      <BoardLED x={W * 0.28 + 16} y={H * 0.77} color="#f59e0b" label="RX" />
+      {/* Silkscreen */}
+      <Text x={W * 0.05} y={H * 0.87} text="Arduino" fontSize={9} fontFamily="monospace" fontStyle="bold" fill={SILK} opacity={0.4} />
+      <Text x={W * 0.05} y={H * 0.87 + 11} text="Uno R3" fontSize={7} fontFamily="monospace" fill={SILK} opacity={0.25} />
+      {/* Mounting holes */}
+      {board.mountingHoles.map((hole, i) => (
+        <Group key={i}>
+          <Circle x={hole.x * S} y={hole.y * S} radius={S * 1.6} fill="#00424f" />
+          <Circle x={hole.x * S} y={hole.y * S} radius={S * 1.0} fill="#080808" />
+        </Group>
+      ))}
+      {/* Top digital pins */}
+      {topPins.map(p => <PinGroup key={p.pinNumber} pin={p} isLeft={false} />)}
+      {/* Bottom power + analog pins */}
+      {botPins.map(p => <PinGroup key={p.pinNumber} pin={p} isLeft={false} />)}
+    </Group>
+  );
+}
+
+/* ── Pi Pico Renderer ── */
+function PicoRenderer({ position }: { position: { x: number; y: number } }) {
+  const board = getBoardModel('pico');
+  const W = board.dimensions.width * S;
+  const H = board.dimensions.height * S;
+  const topPins = board.gpioHeader.filter(p => p.position.y < 10);
+  const botPins = board.gpioHeader.filter(p => p.position.y > 10);
+  return (
+    <Group {...makeDragHandlers(position)}>
+      <Rect x={4} y={4} width={W} height={H} fill="rgba(0,0,0,0.45)" cornerRadius={4} />
+      <Rect x={-1} y={-1} width={W + 2} height={H + 2} fill={PCB_EDGE} cornerRadius={4} />
+      <Rect x={0} y={0} width={W} height={H} fill="#236b42" cornerRadius={3} />
+      <Rect x={0} y={0} width={W} height={H} fill={SOLDER_MASK} opacity={0.2} cornerRadius={3} />
+      {/* RP2040 chip */}
+      <ICChip x={W * 0.3} y={H * 0.1} w={60} h={80} label="RP2040" sublabel="Cortex-M0+" />
+      {/* WiFi chip (Pico W) */}
+      <ICChip x={W * 0.72} y={H * 0.12} w={28} h={30} label="CYW43439" sublabel="WiFi/BT" />
+      {/* Micro-USB */}
+      <Rect x={W * 0.42} y={-6} width={22} height={10} fill={METAL_LO} stroke={METAL_HI} strokeWidth={1} cornerRadius={2} />
+      <Rect x={W * 0.44} y={-4} width={18} height={6} fill="#111" cornerRadius={1} />
+      {/* Silkscreen */}
+      <Text x={W * 0.03} y={H * 0.2} text="Raspberry Pi" fontSize={5.5} fontFamily="monospace" fontStyle="bold" fill={SILK} opacity={0.35} />
+      <Text x={W * 0.03} y={H * 0.2 + 7} text="Pico W" fontSize={5.5} fontFamily="monospace" fill={SILK} opacity={0.25} />
+      {/* Mounting holes */}
+      {board.mountingHoles.map((hole, i) => (
+        <Group key={i}>
+          <Circle x={hole.x * S} y={hole.y * S} radius={S * 1.6} fill={PCB_EDGE} />
+          <Circle x={hole.x * S} y={hole.y * S} radius={S * 1.0} fill="#080808" />
+        </Group>
+      ))}
+      {/* Top-edge pins */}
+      {topPins.map(p => <PinGroup key={p.pinNumber} pin={p} isLeft={false} />)}
+      {/* Bottom-edge pins */}
+      {botPins.map(p => <PinGroup key={p.pinNumber} pin={p} isLeft={true} />)}
+    </Group>
+  );
+}
+
 /* ── Board-specific ICs and components ── */
 function BoardComponents({ id, W, H }: { id: string; W: number; H: number }) {
   const isPi5 = id === 'pi5';
+  const isPiZero = id === 'pi-zero-2w';
+  if (isPiZero) {
+    return (
+      <Group>
+        <ICChip x={W * 0.5} y={H * 0.18} w={42} h={42} label="BCM2710A1" sublabel="Cortex-A53" />
+        <ICChip x={W * 0.5} y={H * 0.52} w={26} h={22} label="CYW43438" sublabel="WiFi/BT" />
+        <Rect x={W * 0.5 - 2} y={H * 0.8} width={18} height={4} fill={METAL_LO} stroke={METAL_HI} strokeWidth={0.6} cornerRadius={1} />
+        <Text x={W * 0.5 - 2} y={H * 0.86} text="antenna" fontSize={3.5} fontFamily="monospace" fill={SILK_DIM} />
+      </Group>
+    );
+  }
   return (
     <Group>
       {/* SoC (BCM2711 for Pi4, BCM2712 for Pi5) */}
@@ -313,16 +418,19 @@ function BoardComponents({ id, W, H }: { id: string; W: number; H: number }) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   Main Board Renderer
+   Main Board Renderer — dispatches to family-specific sub-renderers
    ══════════════════════════════════════════════════════════ */
 export default function BoardRenderer() {
   const boardModelId = useProjectStore((s) => s.boardModel);
   const boardPosition = useProjectStore((s) => s.boardPosition);
-  const board = getBoardModel(boardModelId);
 
+  if (boardModelId === 'arduino-uno') return <ArduinoRenderer position={boardPosition} />;
+  if (boardModelId === 'pico')        return <PicoRenderer position={boardPosition} />;
+
+  // Raspberry Pi family (pi4, pi5, pi-zero-2w) — all share the 40-pin header
+  const board = getBoardModel(boardModelId);
   const W = board.dimensions.width * S;
   const H = board.dimensions.height * S;
-
   const hdr = board.gpioHeader;
   const hdrX = hdr[0].position.x * S;
   const hdrY = hdr[0].position.y * S;
@@ -367,12 +475,20 @@ export default function BoardRenderer() {
       {/* ── Board-specific ICs and passives ── */}
       <BoardComponents id={board.id} W={W} H={H} />
 
-      {/* ── Silkscreen text ── */}
-      <Text x={W * 0.13} y={H * 0.92} text={board.name} fontSize={7} fontFamily="monospace" fontStyle="bold" fill={SILK} opacity={0.35} />
-      <Text x={W * 0.13} y={H * 0.92 + 9} text="© Raspberry Pi Ltd" fontSize={4.5} fontFamily="monospace" fill={SILK} opacity={0.2} />
-      {/* FCC / CE marks */}
-      <Text x={W * 0.65} y={H * 0.92} text="FCC" fontSize={4} fontFamily="monospace" fill={SILK} opacity={0.12} />
-      <Text x={W * 0.72} y={H * 0.92} text="CE" fontSize={4} fontFamily="monospace" fill={SILK} opacity={0.12} />
+      {/* ── Silkscreen text — offset for Pi Zero (narrow board) ── */}
+      {boardModelId === 'pi-zero-2w' ? (
+        <>
+          <Text x={W * 0.5 - 2} y={H * 0.92} text="Pi Zero 2 W" fontSize={5} fontFamily="monospace" fontStyle="bold" fill={SILK} opacity={0.3} />
+          <Text x={W * 0.5 - 2} y={H * 0.92 + 7} text="© RPi Ltd" fontSize={3.5} fontFamily="monospace" fill={SILK} opacity={0.15} />
+        </>
+      ) : (
+        <>
+          <Text x={W * 0.13} y={H * 0.92} text={board.name} fontSize={7} fontFamily="monospace" fontStyle="bold" fill={SILK} opacity={0.35} />
+          <Text x={W * 0.13} y={H * 0.92 + 9} text="© Raspberry Pi Ltd" fontSize={4.5} fontFamily="monospace" fill={SILK} opacity={0.2} />
+          <Text x={W * 0.65} y={H * 0.92} text="FCC" fontSize={4} fontFamily="monospace" fill={SILK} opacity={0.12} />
+          <Text x={W * 0.72} y={H * 0.92} text="CE" fontSize={4} fontFamily="monospace" fill={SILK} opacity={0.12} />
+        </>
+      )}
 
       {/* ── GPIO header ── */}
       {/* plastic housing */}
