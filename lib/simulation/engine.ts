@@ -235,25 +235,42 @@ if _js_input_getter is not None:
     //     so callers don't block without await.
     //  We skip method calls (preceded by '.') to avoid touching obj.method().
 
-    // 1. Collect user function names (before we rewrite 'def')
-    const userFuncNames: string[] = [];
-    for (const m of patched.matchAll(/^\s*def\s+(\w+)\s*\(/gm)) {
-      userFuncNames.push(m[1]);
+    // ── Make user helper functions async so injected 'await' inside them is valid ──
+    //
+    // Problem: time.sleep() → await __piforge_sleep__() is injected everywhere,
+    // including inside plain `def` functions (e.g. doorbell_ring). Python requires
+    // await to be inside an async def.
+    //
+    // Solution:
+    //  1. Collect only module-level (non-method) function names.
+    //     Class methods always have 'self' as first param — skip them.
+    //     We only need to auto-await *calls* to standalone helpers.
+    //  2. Convert ALL defs (including class methods) to async def so any
+    //     injected await inside them is syntactically valid.
+    //  3. For standalone helpers only: strip then re-add 'await' at call sites.
+    //     Guard with (?<!def\s) so the 'def funcName(' declaration itself is
+    //     never turned into 'def await funcName('.
+
+    // 1. Standalone (non-method) functions: def name( NOT followed by self
+    const standaloneNames: string[] = [];
+    for (const m of patched.matchAll(/^\s*def\s+(\w+)\s*\(\s*(?!self\b)/gm)) {
+      standaloneNames.push(m[1]);
     }
 
-    // 2. def → async def (skip already-async ones)
+    // 2. All defs → async def
     patched = patched.replace(/^(\s*)def\s+/gm, '$1async def ');
 
-    // 3. For each user function: strip existing awaits then re-add correctly
-    for (const name of userFuncNames) {
-      // Strip any existing 'await name(' to avoid doubling
+    // 3. Await call sites for standalone helpers only
+    for (const name of standaloneNames) {
+      // Strip any existing 'await name(' first (avoid doubling on re-run)
       patched = patched.replace(
         new RegExp(`\\bawait\\s+${name}\\s*\\(`, 'g'),
         `${name}(`
       );
-      // Add 'await' before non-method calls (not preceded by '.' or word char)
+      // Re-add 'await' — but NOT on definition lines ('def name(')
+      // and NOT on method calls ('obj.name(')
       patched = patched.replace(
-        new RegExp(`(?<![.\\w])\\b${name}\\s*\\(`, 'g'),
+        new RegExp(`(?<!def\\s)(?<![.\\w])\\b${name}\\s*\\(`, 'g'),
         `await ${name}(`
       );
     }
