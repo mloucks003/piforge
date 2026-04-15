@@ -14,7 +14,7 @@ const PCB2 = '#176335';
 const PCB_EDGE = '#0e3a1f';
 const SOLDER_MASK = '#1d7a44';
 const SILK = '#c8dbbe';
-const SILK_DIM = 'rgba(200,219,190,0.3)';
+const SILK_DIM = 'rgba(200,219,190,0.9)';
 const COPPER = '#c87533';
 const GOLD = '#d4a843';
 const IC_BLACK = '#1a1a1e';
@@ -106,13 +106,42 @@ const BoardLED = React.memo(function BoardLED({ x, y, color, label }: { x: numbe
 const PinGroup = React.memo(function PinGroup({ pin, isLeft }: { pin: PinDefinition; isLeft: boolean }) {
   const x = pin.position.x * S;
   const y = pin.position.y * S;
+  // Label background: sits between the pin and the text
+  const bgW = 58;
+  const bgH = 14;
+  const bgX = isLeft ? x - PR - 3 - bgW : x + PR + 3;
+  const bgY = y - bgH / 2;
   return (
     <Group>
+      {/* Copper pad */}
       <Circle x={x} y={y} radius={PR + 1.5} fill={COPPER} opacity={0.45} />
       <Circle x={x} y={y} radius={PR} fill={pinFill(pin.type)} stroke={pinEdge(pin.type)} strokeWidth={0.8} />
       <Circle x={x - 0.8} y={y - 0.8} radius={0.8} fill="rgba(255,255,255,0.3)" />
-      <Text x={isLeft ? x - PR - 15 : x + PR + 3} y={y - 3.5} text={String(pin.pinNumber)} fontSize={5} fontFamily="monospace" fill={SILK_DIM} align={isLeft ? 'right' : 'left'} width={11} />
-      <Text x={isLeft ? x - PR - 54 : x + PR + 15} y={y - 4} text={pinLabel(pin)} fontSize={6} fontFamily="monospace" fontStyle="bold" fill={SILK} align={isLeft ? 'right' : 'left'} width={38} />
+      {/* Dark backing pill so text pops off the PCB */}
+      <Rect x={bgX} y={bgY} width={bgW} height={bgH} fill="rgba(0,0,0,0.62)" cornerRadius={2} />
+      {/* Pin number — small, muted */}
+      <Text
+        x={isLeft ? bgX + 2 : bgX + 2}
+        y={bgY + 2}
+        text={`#${pin.pinNumber}`}
+        fontSize={6}
+        fontFamily="monospace"
+        fill={SILK_DIM}
+        align="left"
+        width={16}
+      />
+      {/* GPIO / function label — bold, bright */}
+      <Text
+        x={isLeft ? bgX + 2 : bgX + 18}
+        y={bgY + 2}
+        text={pinLabel(pin)}
+        fontSize={8}
+        fontFamily="monospace"
+        fontStyle="bold"
+        fill={SILK}
+        align={isLeft ? 'right' : 'left'}
+        width={isLeft ? bgW - 20 : bgW - 20}
+      />
     </Group>
   );
 });
