@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type Konva from 'konva';
 
 export interface ComponentContextMenu {
   /** Screen-space position inside the canvas container */
@@ -18,6 +19,8 @@ export interface CanvasState {
   gridSize: number;
   /** When true, clicking on a pin starts/completes a wire (no Shift required) */
   wiringMode: boolean;
+  /** Live reference to the Konva Stage — used for PNG export */
+  konvaStage: Konva.Stage | null;
 
   // Actions
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
@@ -28,6 +31,7 @@ export interface CanvasState {
   setGridSize: (size: number) => void;
   toggleWiringMode: () => void;
   setWiringMode: (on: boolean) => void;
+  setKonvaStage: (stage: Konva.Stage | null) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -38,6 +42,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   snapToGrid: true,
   gridSize: 10,
   wiringMode: false,
+  konvaStage: null,
 
   setViewport: (partial) =>
     set((s) => ({ viewport: { ...s.viewport, ...partial } })),
@@ -53,4 +58,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   toggleWiringMode: () => set((s) => ({ wiringMode: !s.wiringMode })),
 
   setWiringMode: (on) => set({ wiringMode: on }),
+
+  setKonvaStage: (stage) => set({ konvaStage: stage }),
 }));

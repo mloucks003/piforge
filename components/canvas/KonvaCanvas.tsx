@@ -42,12 +42,20 @@ export default function KonvaCanvas() {
   const contextMenu           = useCanvasStore((s) => s.contextMenu);
   const setContextMenu        = useCanvasStore((s) => s.setContextMenu);
   const setSelectedComponentId = useCanvasStore((s) => s.setSelectedComponentId);
+  const setKonvaStage         = useCanvasStore((s) => s.setKonvaStage);
   const removeComponent       = useProjectStore((s) => s.removeComponent);
 
   // Mark as mounted
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Register stage ref in canvasStore for PNG export
+  useEffect(() => {
+    if (stageRef.current) setKonvaStage(stageRef.current);
+    return () => setKonvaStage(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, setKonvaStage]);
 
   // Resize observer
   useEffect(() => {

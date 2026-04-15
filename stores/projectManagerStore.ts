@@ -2,7 +2,8 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { BoardModelId } from './projectStore';
+import { useProjectStore } from './projectStore';
+import type { BoardModelId, PlacedComponent, Wire, PlacedBreadboard, CodeLanguage } from './projectStore';
 
 export interface SavedProject {
   id: string;
@@ -13,13 +14,13 @@ export interface SavedProject {
   wireCount: number;
   // Full serialised circuit + code
   state: {
-    components: Record<string, unknown>;
-    wires: Record<string, unknown>;
-    breadboards: Record<string, unknown>;
+    components: Record<string, PlacedComponent>;
+    wires: Record<string, Wire>;
+    breadboards: Record<string, PlacedBreadboard>;
     boardModel: BoardModelId;
     boardPosition: { x: number; y: number };
     code: string;
-    language: string;
+    language: CodeLanguage;
   };
 }
 
@@ -35,11 +36,6 @@ interface ProjectManagerState {
   duplicateProject: (id: string) => void;
 }
 
-// Lazy import to avoid circular dependency
-function getProjectStore() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./projectStore').useProjectStore;
-}
 
 export const useProjectManagerStore = create<ProjectManagerState>()(
   persist(
@@ -51,7 +47,7 @@ export const useProjectManagerStore = create<ProjectManagerState>()(
       closeModal: () => set({ modalOpen: false }),
 
       saveProject: (name) => {
-        const store = getProjectStore().getState();
+        const store = useProjectStore.getState();
         const id = `proj_${Date.now()}`;
         const project: SavedProject = {
           id,
@@ -78,8 +74,7 @@ export const useProjectManagerStore = create<ProjectManagerState>()(
         const { projects } = get();
         const project = projects[id];
         if (!project) return;
-        const store = getProjectStore();
-        store.setState({
+        useProjectStore.setState({
           components: project.state.components,
           wires: project.state.wires,
           breadboards: project.state.breadboards,

@@ -9,8 +9,9 @@ import {
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useProjectManagerStore } from '@/stores/projectManagerStore';
+import { useCanvasStore } from '@/stores/canvasStore';
 import { SimulationEngine } from '@/lib/simulation/engine';
-import { saveToLocalStorage, loadFromLocalStorage } from '@/lib/serialization/serializer';
+import { loadFromLocalStorage } from '@/lib/serialization/serializer';
 import { GPIOMock } from '@/lib/simulation/gpio-mock';
 import { resolveCircuit } from '@/lib/simulation/circuit-resolver';
 import { generateBuildGuide, downloadBuildGuide } from '@/lib/export/build-guide';
@@ -150,24 +151,14 @@ export default function TopBar() {
     s.addConsoleEntry('system', 'Simulation reset.');
   }, []);
 
-  const handleSave = useCallback(() => {
-    const ok = saveToLocalStorage();
-    const s = useProjectStore.getState();
-    if (ok) {
-      s.addConsoleEntry('system', 'Project saved to browser storage.');
-    } else {
-      s.addConsoleEntry('system', 'Failed to save project — storage may be full.');
-    }
-  }, []);
-
   const handleExportPng = useCallback(() => {
-    const stageCanvas = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
-    if (!stageCanvas) {
-      useProjectStore.getState().addConsoleEntry('system', 'Export failed — canvas not found.');
+    const stage = useCanvasStore.getState().konvaStage;
+    if (!stage) {
+      useProjectStore.getState().addConsoleEntry('system', 'Export failed — canvas not ready.');
       return;
     }
     try {
-      const dataUrl = stageCanvas.toDataURL('image/png');
+      const dataUrl = stage.toDataURL({ mimeType: 'image/png', quality: 1 });
       const link = document.createElement('a');
       link.download = 'piforge-circuit.png';
       link.href = dataUrl;
