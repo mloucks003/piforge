@@ -206,30 +206,49 @@ export default function TopBar() {
         <div className="relative">
           <button
             onClick={() => setBoardMenuOpen(o => !o)}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            className="flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
-            {BOARD_CATALOG.find(b => b.id === boardModel)?.name ?? boardModel}
+            <Cpu className="h-3.5 w-3.5 text-green-500" />
+            <span>{BOARD_CATALOG.find(b => b.id === boardModel)?.name ?? boardModel}</span>
             <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-150 ${boardMenuOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {boardMenuOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setBoardMenuOpen(false)} />
-              <div className="absolute left-0 top-full mt-1 z-40 w-52 rounded-lg border border-border bg-popover shadow-xl py-1 text-xs">
-                {(['raspberry-pi', 'arduino', 'pico'] as const).map(family => {
-                  const boards = BOARD_CATALOG.filter(b => b.family === family);
-                  const familyLabel = family === 'raspberry-pi' ? 'Raspberry Pi' : family === 'arduino' ? 'Arduino' : 'Microcontroller';
+              <div className="absolute left-0 top-full mt-1.5 z-40 w-56 rounded-xl border border-border shadow-2xl overflow-hidden"
+                style={{ background: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}>
+
+                {/* Header */}
+                <div className="px-3 py-2 border-b border-border/60 bg-muted/40">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Select Board</p>
+                </div>
+
+                {[
+                  { family: 'raspberry-pi', label: 'Raspberry Pi', color: 'text-green-400' },
+                  { family: 'arduino',      label: 'Arduino',       color: 'text-blue-400'  },
+                  { family: 'pico',         label: 'Microcontroller', color: 'text-purple-400' },
+                ].map(({ family, label, color }) => {
+                  const groupBoards = BOARD_CATALOG.filter(b => b.family === family);
                   return (
-                    <div key={family}>
-                      <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{familyLabel}</div>
-                      {boards.map(b => (
+                    <div key={family} className="py-1">
+                      <div className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest ${color}`}>{label}</div>
+                      {groupBoards.map(b => (
                         <button key={b.id}
                           onClick={() => { setBoardModel(b.id); setBoardMenuOpen(false); }}
-                          className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-accent ${boardModel === b.id ? 'text-primary font-semibold' : 'text-foreground'}`}
+                          className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
+                            ${boardModel === b.id
+                              ? 'bg-green-500/10 text-green-400 font-semibold'
+                              : 'text-foreground hover:bg-muted/60'}`}
                         >
-                          <span>{b.name}</span>
-                          <span className="text-[9px] text-muted-foreground font-mono">{b.lang}</span>
+                          <div className="flex items-center gap-2">
+                            {boardModel === b.id && <span className="text-green-400">✓</span>}
+                            {boardModel !== b.id && <span className="text-transparent">✓</span>}
+                            <span>{b.name}</span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
+                            {b.lang === 'cpp' ? 'C++' : b.lang === 'micropython' ? 'µPy' : 'Py'}
+                          </span>
                         </button>
                       ))}
                     </div>
