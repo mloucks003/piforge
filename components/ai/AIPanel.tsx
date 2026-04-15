@@ -61,15 +61,19 @@ const MODE_META: Record<AIMode, { icon: React.ElementType; label: string; placeh
 };
 
 export default function AIPanel() {
-  const { messages, streaming, streamingContent, apiKey, activeMode, error,
+  const { messages, streaming, streamingContent, apiKey, serverHasKey, activeMode, error,
     setActiveMode, addMessage, appendStreamChunk, finalizeStream,
-    setStreaming, setError, clearMessages } = useAIStore();
+    setStreaming, setError, clearMessages, checkServerKey } = useAIStore();
 
   const [input, setInput] = useState('');
-  const [showSettings, setShowSettings] = useState(!apiKey);
+  // Only show settings if server has no key AND user has no key
+  const needsKey = serverHasKey === false && !apiKey;
+  const [showSettings, setShowSettings] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Check if server has a key configured (runs once)
+  useEffect(() => { checkServerKey(); }, [checkServerKey]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length, streamingContent]);
 
   const send = async (overrideContent?: string) => {
@@ -94,15 +98,23 @@ export default function AIPanel() {
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/20 shrink-0">
         <Sparkles className="h-4 w-4 text-purple-400" />
         <span className="text-xs font-semibold text-foreground flex-1">PiForge AI</span>
-        <button onClick={() => setShowSettings(v => !v)} className="p-1 rounded hover:bg-accent transition-colors" title="API Key Settings">
-          <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-        </button>
+        {/* Show "Ready" badge when server has key, otherwise show settings gear */}
+        {serverHasKey ? (
+          <span className="flex items-center gap-1 text-[9px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Ready
+          </span>
+        ) : (
+          <button onClick={() => setShowSettings(v => !v)} className="p-1 rounded hover:bg-accent transition-colors" title="API Key Settings">
+            <Settings className={`h-3.5 w-3.5 ${needsKey ? 'text-yellow-400' : 'text-muted-foreground'}`} />
+          </button>
+        )}
         <button onClick={clearMessages} className="p-1 rounded hover:bg-accent transition-colors" title="Clear conversation">
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </div>
 
-      {showSettings && <ApiKeySettings onClose={() => setShowSettings(false)} />}
+      {/* Only show key settings if server has no key */}
+      {showSettings && !serverHasKey && <ApiKeySettings onClose={() => setShowSettings(false)} />}
 
       {/* Mode tabs */}
       <div className="flex shrink-0 border-b border-border">
@@ -135,11 +147,12 @@ export default function AIPanel() {
             <p className="text-xs font-medium text-muted-foreground">
               {activeMode === 'chat' ? 'Ask me anything about your circuit or code.' :
                activeMode === 'analyze' ? 'Click Analyze Code to get a full review.' :
+               activeMode === 'generate' ? 'Describe what you want to build and click Generate.' :
                'Click Auto-Fix to diagnose errors from the console.'}
             </p>
-            {!apiKey && (
+            {needsKey && (
               <button onClick={() => setShowSettings(true)} className="text-[11px] text-yellow-400 underline">
-                ⚠ Set your OpenAI API key first
+                ⚠ Add your OpenAI API key to get started
               </button>
             )}
           </div>
@@ -191,7 +204,11 @@ export default function AIPanel() {
           </button>
         </div>
         <p className="text-[9px] text-muted-foreground text-center">
-          Your code, wiring, and console output are sent as context · Powered by GPT-4o mini
+          {serverHasKey
+            ? 'Your code, wiring & console are sent as context · Powered by GPT-4o mini'
+            : apiKey
+              ? 'Using your API key · Code, wiring & console sent as context'
+              : 'Add an API key above to enable AI features'}
         </p>
       </div>
     </div>

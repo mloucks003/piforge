@@ -2,9 +2,9 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import {
-  Play, Pause, Square, Save, Share2, Download,
+  Play, Pause, Square, Download,
   Cpu, Loader2, Image, FileText, RefreshCw,
-  Undo2, Redo2, FolderOpen, Camera,
+  Undo2, Redo2, FolderOpen,
 } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -292,10 +292,10 @@ export default function TopBar() {
         )}
       </div>
 
-      {/* Right: undo/redo / save / share / export / user */}
-      <div className="flex items-center gap-2">
+      {/* Right: undo/redo · projects · export · new · user */}
+      <div className="flex items-center gap-1">
         {/* ── Undo / Redo ── */}
-        <div className="flex items-center gap-0.5 pr-2 border-r border-border">
+        <div className="flex items-center border-r border-border pr-1 mr-1">
           <button onClick={undo} disabled={past.length === 0} title="Undo (Ctrl+Z)"
             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-30">
             <Undo2 className="h-4 w-4" />
@@ -306,22 +306,10 @@ export default function TopBar() {
           </button>
         </div>
         {/* ── Project Manager ── */}
-        <button onClick={openProjectManager} title="Project Manager (Ctrl+S to quick-save)"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+        <button onClick={openProjectManager} title="Projects (Ctrl+S to save)"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
           <FolderOpen className="h-4 w-4" />
-        </button>
-        <button
-          onClick={handleSave}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          aria-label="Save"
-        >
-          <Save className="h-4 w-4" />
-        </button>
-        <button
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          aria-label="Share"
-        >
-          <Share2 className="h-4 w-4" />
+          <span className="text-[11px] font-medium hidden lg:block">Projects</span>
         </button>
         <div className="relative">
           <button
