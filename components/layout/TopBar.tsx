@@ -395,7 +395,7 @@ export default function TopBar() {
         </button>
 
         {/* ── Environment picker ── */}
-        <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5" title="Smart Home / Office floor plan overlay">
+        <div data-tour="env-picker" className="flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5" title="Smart Home / Office floor plan overlay">
           <button
             onClick={() => {
               const next = activeEnvironment === 'home' ? null : 'home';

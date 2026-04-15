@@ -24,4 +24,9 @@ export interface TutorialDefinition {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   estimatedMinutes: number;
   steps: TutorialStep[];
+  /**
+   * Optional hook called once when the tutorial starts.
+   * Use this to auto-place components, create wires, set code, etc.
+   */
+  onStart?: () => void;
 }

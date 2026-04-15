@@ -5,7 +5,7 @@
  * Works exactly like GuidedTour but tied to step-by-step tutorials with completion conditions.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTutorialStore } from '@/stores/tutorialStore';
 import { X, ChevronRight, SkipForward, CheckCircle2 } from 'lucide-react';
 
@@ -22,6 +22,17 @@ function getTargetRect(target: string): Rect | null {
 export default function TutorialOverlay() {
   const { active, currentStep, completed, advance, skipStep, stop } = useTutorialStore();
   const [rect, setRect] = useState<Rect | null>(null);
+  // Fire onStart exactly once when a new tutorial becomes active
+  const lastActiveIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (active && active.id !== lastActiveIdRef.current) {
+      lastActiveIdRef.current = active.id;
+      active.onStart?.();
+    }
+    if (!active) {
+      lastActiveIdRef.current = null;
+    }
+  }, [active]);
 
   const step = active?.steps[currentStep];
   const total = active?.steps.length ?? 0;
