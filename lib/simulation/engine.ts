@@ -197,7 +197,6 @@ if _js_input_getter is not None:
       .replace(/^from time import \*\s*$/gm, '');
 
     // ── DEDUP: strip any existing 'await' before methods we're about to re-add it to ──
-    // Prevents "await await" if user already wrote it or code is run a second time.
     patched = patched
       .replace(/\bawait\s+(\w+\.tick\s*\()/g, '$1')
       .replace(/\bawait\s+(\w+\.blink\s*\()/g, '$1')
@@ -215,19 +214,49 @@ if _js_input_getter is not None:
       .replace(/(?<![.\w])sleep\s*\(/g, 'await __piforge_sleep__(');
 
     // ── pygame / gpiozero async methods → add await ──
-    // Clock.tick() / tick_busy_loop()
     patched = patched.replace(/\b(\w+)\.tick\s*\(/g, 'await $1.tick(');
-    // gpiozero LED/PWMLED/Buzzer background methods
     patched = patched.replace(/\b(\w+)\.blink\s*\(/g, 'await $1.blink(');
     patched = patched.replace(/\b(\w+)\.pulse\s*\(/g, 'await $1.pulse(');
     patched = patched.replace(/\b(\w+)\.beep\s*\(/g, 'await $1.beep(');
-    // gpiozero blocking waits
     patched = patched.replace(/\b(\w+)\.wait_for_press\s*\(/g, 'await $1.wait_for_press(');
     patched = patched.replace(/\b(\w+)\.wait_for_release\s*\(/g, 'await $1.wait_for_release(');
     patched = patched.replace(/\b(\w+)\.wait_for_motion\s*\(/g, 'await $1.wait_for_motion(');
-    // pygame.time.delay / pygame.time.wait
     patched = patched.replace(/\bpygame\.time\.delay\s*\(/g, 'await pygame.time.delay(');
     patched = patched.replace(/\bpygame\.time\.wait\s*\(/g, 'await pygame.time.wait(');
+
+    // ── Fix: any user def that now contains 'await' must become 'async def' ──
+    // 'await' injected above (e.g. time.sleep inside doorbell_ring) causes
+    // SyntaxError if the enclosing def is not async.
+    //
+    // Strategy:
+    //  1. Collect all user-defined function names.
+    //  2. Make ALL of them async def (safe: async fns work fine without internal awaits).
+    //  3. Strip then re-add 'await' before every top-level call to those functions
+    //     so callers don't block without await.
+    //  We skip method calls (preceded by '.') to avoid touching obj.method().
+
+    // 1. Collect user function names (before we rewrite 'def')
+    const userFuncNames: string[] = [];
+    for (const m of patched.matchAll(/^\s*def\s+(\w+)\s*\(/gm)) {
+      userFuncNames.push(m[1]);
+    }
+
+    // 2. def → async def (skip already-async ones)
+    patched = patched.replace(/^(\s*)def\s+/gm, '$1async def ');
+
+    // 3. For each user function: strip existing awaits then re-add correctly
+    for (const name of userFuncNames) {
+      // Strip any existing 'await name(' to avoid doubling
+      patched = patched.replace(
+        new RegExp(`\\bawait\\s+${name}\\s*\\(`, 'g'),
+        `${name}(`
+      );
+      // Add 'await' before non-method calls (not preceded by '.' or word char)
+      patched = patched.replace(
+        new RegExp(`(?<![.\\w])\\b${name}\\s*\\(`, 'g'),
+        `await ${name}(`
+      );
+    }
 
     const indented = patched.split('\n').map((line) => '    ' + line).join('\n');
 
