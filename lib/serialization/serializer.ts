@@ -1,8 +1,12 @@
 import { useProjectStore } from '@/stores/projectStore';
 import type { ProjectState } from '@/stores/projectStore';
 
-const STORAGE_KEY = 'piforge-project';
 const SCHEMA_VERSION = 1;
+
+/** Each user gets their own storage key so no project data bleeds between accounts. */
+export function projectStorageKey(userId?: string | null): string {
+  return userId ? `piforge-project-${userId}` : 'piforge-project-guest';
+}
 
 export interface ProjectFile {
   version: number;
@@ -48,10 +52,10 @@ export function deserializeProject(file: ProjectFile) {
   });
 }
 
-export function saveToLocalStorage() {
+export function saveToLocalStorage(userId?: string | null) {
   try {
     const file = serializeProject();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(file));
+    localStorage.setItem(projectStorageKey(userId), JSON.stringify(file));
     return true;
   } catch (e) {
     console.error('Failed to save:', e);
@@ -59,9 +63,9 @@ export function saveToLocalStorage() {
   }
 }
 
-export function loadFromLocalStorage(): boolean {
+export function loadFromLocalStorage(userId?: string | null): boolean {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(projectStorageKey(userId));
     if (!raw) return false;
     const file = JSON.parse(raw) as ProjectFile;
     deserializeProject(file);
@@ -70,6 +74,20 @@ export function loadFromLocalStorage(): boolean {
     console.error('Failed to load:', e);
     return false;
   }
+}
+
+/** Reset canvas to a blank state (called on sign-out). */
+export function clearProjectState() {
+  useProjectStore.setState({
+    components: {},
+    breadboards: {},
+    wires: {},
+    code: '',
+    consoleOutput: [],
+    simulationState: 'idle',
+    past: [],
+    future: [],
+  });
 }
 
 export function exportAsPNG(stageRef: { toDataURL: (opts: { pixelRatio: number }) => string }) {
