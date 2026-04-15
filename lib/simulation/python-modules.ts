@@ -49,18 +49,22 @@ def setwarnings(flag):
     pass
 
 def setup(pin, mode, pull_up_down=PUD_OFF, initial=LOW):
-    _pins[pin] = {'mode': mode, 'value': int(initial), 'pull': pull_up_down}
-    if _js_callback:
-        _js_callback(pin, int(initial), 'setup', 1 if mode == OUT else 0)
+    pins = pin if isinstance(pin, (list, tuple)) else [pin]
+    for p in pins:
+        _pins[p] = {'mode': mode, 'value': int(initial), 'pull': pull_up_down}
+        if _js_callback:
+            _js_callback(p, int(initial), 'setup', 1 if mode == OUT else 0)
 
 def output(pin, value):
     val = 1 if value else 0
-    if pin in _pins:
-        _pins[pin]['value'] = val
-    else:
-        _pins[pin] = {'mode': OUT, 'value': val, 'pull': PUD_OFF}
-    if _js_callback:
-        _js_callback(pin, val, 'output', 0)
+    pins = pin if isinstance(pin, (list, tuple)) else [pin]
+    for p in pins:
+        if p in _pins:
+            _pins[p]['value'] = val
+        else:
+            _pins[p] = {'mode': OUT, 'value': val, 'pull': PUD_OFF}
+        if _js_callback:
+            _js_callback(p, val, 'output', 0)
 
 def input(pin):
     # Ask JS side for the live button state first
