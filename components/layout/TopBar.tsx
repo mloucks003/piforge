@@ -4,8 +4,9 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import {
   Play, Pause, Square, Download,
   Cpu, Loader2, Image, FileText, RefreshCw,
-  Undo2, Redo2, FolderOpen, ChevronDown,
+  Undo2, Redo2, FolderOpen, ChevronDown, HelpCircle, Home, Building2,
 } from 'lucide-react';
+import { useTourStore } from '@/stores/tourStore';
 import { BOARD_CATALOG } from '@/lib/boards';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -42,6 +43,7 @@ const PLAN_COLORS: Record<string, string> = {
 
 export default function TopBar() {
   const boardModel = useProjectStore((s) => s.boardModel);
+  const startTour = useTourStore((s) => s.start);
   const setBoardModel = useProjectStore((s) => s.setBoardModel);
   const simulationState = useProjectStore((s) => s.simulationState);
   const engineRef = useRef<SimulationEngine | null>(null);
@@ -55,6 +57,8 @@ export default function TopBar() {
   const future    = useProjectStore((s) => s.future);
   const openProjectManager = useProjectManagerStore((s) => s.openModal);
   const saveProject        = useProjectManagerStore((s) => s.saveProject);
+  const activeEnvironment    = useCanvasStore((s) => s.activeEnvironment);
+  const setActiveEnvironment = useCanvasStore((s) => s.setActiveEnvironment);
 
   // Keyboard shortcuts: Ctrl+Z, Ctrl+Y/Shift+Z, Ctrl+S
   useEffect(() => {
@@ -197,13 +201,13 @@ export default function TopBar() {
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
       {/* Left: branding + board switcher */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 font-semibold text-foreground">
+        <div data-tour="logo" className="flex items-center gap-2 font-semibold text-foreground">
           <Cpu className="h-5 w-5 text-green-500" />
           <span>PiForge</span>
         </div>
 
         {/* Board selector dropdown */}
-        <div className="relative">
+        <div className="relative" data-tour="board-selector">
           <button
             onClick={() => setBoardMenuOpen(o => !o)}
             className="flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
@@ -263,6 +267,7 @@ export default function TopBar() {
       {/* Center: simulation controls */}
       <div className="flex items-center gap-2">
         <button
+          data-tour="run-btn"
           onClick={handlePlay}
           disabled={isRunning}
           className={`rounded-md p-1.5 transition-colors ${
@@ -373,6 +378,33 @@ export default function TopBar() {
           aria-label="New Project"
         >
           <RefreshCw className="h-4 w-4" />
+        </button>
+
+        {/* ── Environment picker ── */}
+        <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5" title="Smart Home / Office floor plan overlay">
+          <button
+            onClick={() => setActiveEnvironment(activeEnvironment === 'home' ? null : 'home')}
+            className={`rounded p-1.5 transition-colors ${activeEnvironment === 'home' ? 'bg-green-500/20 text-green-400' : 'text-muted-foreground hover:text-foreground'}`}
+            title="Smart Home floor plan"
+          >
+            <Home className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => setActiveEnvironment(activeEnvironment === 'office' ? null : 'office')}
+            className={`rounded p-1.5 transition-colors ${activeEnvironment === 'office' ? 'bg-blue-500/20 text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}
+            title="Smart Office floor plan"
+          >
+            <Building2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* ── Tour button ── */}
+        <button
+          onClick={startTour}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          title="Take a guided tour"
+        >
+          <HelpCircle className="h-4 w-4" />
         </button>
 
         {/* ── User / Auth ── */}

@@ -107,11 +107,12 @@ export default function Sidebar() {
   }, {});
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 bg-background">
+    <div data-tour="sidebar" className="flex flex-col flex-1 min-h-0 bg-background">
       {/* Tab bar */}
       <div className="flex shrink-0 border-b border-border">
         {([['parts', 'Parts', Package], ['projects', 'Projects', FolderOpen]] as const).map(([id, label, Icon]) => (
           <button key={id} onClick={() => setTab(id)}
+            data-tour={id === 'projects' ? 'projects-tab' : undefined}
             className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2 ${tab === id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
             <Icon className="h-3.5 w-3.5" />{label}
           </button>

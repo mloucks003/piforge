@@ -21,6 +21,8 @@ export interface CanvasState {
   wiringMode: boolean;
   /** Live reference to the Konva Stage — used for PNG export */
   konvaStage: Konva.Stage | null;
+  /** Active smart-home environment floor plan, or null */
+  activeEnvironment: 'home' | 'office' | null;
 
   // Actions
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
@@ -32,6 +34,7 @@ export interface CanvasState {
   toggleWiringMode: () => void;
   setWiringMode: (on: boolean) => void;
   setKonvaStage: (stage: Konva.Stage | null) => void;
+  setActiveEnvironment: (env: CanvasState['activeEnvironment']) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -43,6 +46,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   gridSize: 10,
   wiringMode: false,
   konvaStage: null,
+  activeEnvironment: null,
 
   setViewport: (partial) =>
     set((s) => ({ viewport: { ...s.viewport, ...partial } })),
@@ -60,4 +64,5 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setWiringMode: (on) => set({ wiringMode: on }),
 
   setKonvaStage: (stage) => set({ konvaStage: stage }),
+  setActiveEnvironment: (env) => set({ activeEnvironment: env }),
 }));

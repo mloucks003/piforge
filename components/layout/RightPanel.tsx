@@ -274,6 +274,7 @@ export default function RightPanel() {
       <div className="flex shrink-0 border-b border-border">
         {TABS.map(([id, label, Icon]) => (
           <button key={id} onClick={() => setActiveTab(id)}
+            data-tour={id === 'ai' ? 'ai-tab' : id === 'editor' ? 'code-editor' : undefined}
             className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2 ${
               activeTab === id
                 ? id === 'ai' ? 'border-purple-500 text-foreground' : 'border-primary text-foreground'

@@ -97,7 +97,7 @@ export default function CanvasArea() {
   }, []);
 
   return (
-    <div className={`relative flex-1 overflow-hidden bg-muted ${wiringMode ? 'cursor-crosshair' : ''}`}>
+    <div data-tour="canvas" className={`relative flex-1 overflow-hidden bg-muted ${wiringMode ? 'cursor-crosshair' : ''}`}>
       {isClient ? (
         <>
           <KonvaCanvas />

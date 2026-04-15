@@ -12,6 +12,7 @@ import ComponentRenderer from './ComponentRenderer';
 import WireRenderer from './WireRenderer';
 import TouchscreenDisplay from './TouchscreenDisplay';
 import WiringInteractionLayer from './WiringInteractionLayer';
+import EnvironmentRenderer from './EnvironmentRenderer';
 
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 5;
@@ -43,6 +44,7 @@ export default function KonvaCanvas() {
   const setContextMenu        = useCanvasStore((s) => s.setContextMenu);
   const setSelectedComponentId = useCanvasStore((s) => s.setSelectedComponentId);
   const setKonvaStage         = useCanvasStore((s) => s.setKonvaStage);
+  const activeEnvironment     = useCanvasStore((s) => s.activeEnvironment);
   const removeComponent       = useProjectStore((s) => s.removeComponent);
 
   // Mark as mounted
@@ -251,6 +253,9 @@ export default function KonvaCanvas() {
 
         {/* Layer 2: Circuit scene — board, breadboards, components, wires, display */}
         <Layer>
+          {activeEnvironment && (
+            <EnvironmentRenderer type={activeEnvironment} />
+          )}
           <BoardRenderer />
           <BreadboardRenderer />
           <WireRenderer />

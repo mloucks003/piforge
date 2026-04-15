@@ -1,5 +1,5 @@
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
-export type ProjectTag = 'GPIO' | 'PWM' | 'Sensors' | 'Games' | 'Motors' | 'Display' | 'Audio' | 'pygame' | 'touchscreen';
+export type ProjectTag = 'GPIO' | 'PWM' | 'Sensors' | 'Games' | 'Motors' | 'Display' | 'Audio' | 'pygame' | 'touchscreen' | 'IoT' | 'Networking' | 'SmartHome' | 'Arduino' | 'MicroPython' | 'Advanced';
 
 export interface ProjectComponent {
   definitionId: string;

@@ -1237,10 +1237,705 @@ print("Arm parked.")
   },
 ];
 
+// ── ADVANCED: SMART HOME & NETWORKING ──────────────────────────────────────
+
+projects.push(
+  {
+    id: 'smart-home-hub',
+    title: '🏠 Smart Home Hub',
+    description: 'Build a full MQTT-based smart home controller. Motion detection auto-controls lights, a DHT22 reports temperature, and everything publishes to a simulated MQTT broker — just like Home Assistant.',
+    difficulty: 'advanced',
+    estimatedMinutes: 30,
+    tags: ['IoT', 'SmartHome', 'Sensors', 'GPIO'],
+    emoji: '🏠',
+    components: [
+      { definitionId: 'pir-sensor',    quantity: 1, label: 'PIR Motion Sensor' },
+      { definitionId: 'dht22',         quantity: 1, label: 'DHT22 Temp/Humidity' },
+      { definitionId: 'led-green',     quantity: 1, label: 'Living Room Light (LED)' },
+      { definitionId: 'led-blue',      quantity: 1, label: 'Bedroom Light (LED)' },
+      { definitionId: 'buzzer',        quantity: 1, label: 'Doorbell Buzzer' },
+      { definitionId: 'relay',         quantity: 1, label: '5V Relay (Main Power)' },
+    ],
+    wiring: [
+      { from: 'GPIO4  (Pin 7)',  to: 'PIR OUT',          color: 'yellow', note: 'Motion signal' },
+      { from: 'GPIO17 (Pin 11)', to: 'Green LED anode',  color: 'green',  note: 'Living room' },
+      { from: 'GPIO27 (Pin 13)', to: 'Blue LED anode',   color: 'blue',   note: 'Bedroom' },
+      { from: 'GPIO18 (Pin 12)', to: 'Buzzer +',         color: 'orange', note: 'Doorbell' },
+      { from: 'GPIO22 (Pin 15)', to: 'DHT22 data',       color: 'white'  },
+      { from: '3V3   (Pin 1)',  to: 'PIR VCC + DHT VCC', color: 'red'   },
+      { from: 'GND   (Pin 6)',  to: 'All grounds',       color: 'black' },
+    ],
+    code: `import RPi.GPIO as GPIO
+import time, json, math
+
+# ── Pin map ──────────────────────────────────────────
+PIR       = 4
+LIGHT_LR  = 17   # Living room
+LIGHT_BR  = 27   # Bedroom
+DOORBELL  = 18
+DHT_PIN   = 22
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([LIGHT_LR, LIGHT_BR, DOORBELL], GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(PIR, GPIO.IN)
+
+# ── Simulated MQTT broker ─────────────────────────────
+class MQTT:
+    def publish(self, topic, payload):
+        print(f"📤 [{topic}]  {json.dumps(payload)}")
+    def subscribe(self, topic):
+        print(f"📥 Subscribed: {topic}")
+
+mqtt = MQTT()
+mqtt.subscribe("home/#")
+
+# ── Simulated sensor readings ─────────────────────────
+def read_dht22():
+    t = time.time()
+    temp     = round(20.0 + 3 * math.sin(t / 120), 1)
+    humidity = round(50.0 + 15 * math.sin(t / 200), 1)
+    return temp, humidity
+
+def doorbell_ring():
+    print("🔔 Doorbell!")
+    for _ in range(3):
+        GPIO.output(DOORBELL, GPIO.HIGH); time.sleep(0.15)
+        GPIO.output(DOORBELL, GPIO.LOW);  time.sleep(0.15)
+    mqtt.publish("home/doorbell", {"event": "pressed"})
+
+print("🏠 Smart Home Hub — Online")
+print("Rooms: Living Room · Bedroom")
+print("Sensors: Motion · Temperature · Humidity")
+mqtt.publish("home/status", {"state": "online", "rooms": 2})
+
+last_motion = False
+cycle = 0
+try:
+    while True:
+        cycle += 1
+        motion = bool(GPIO.input(PIR))
+
+        # Motion → living room light
+        if motion and not last_motion:
+            GPIO.output(LIGHT_LR, GPIO.HIGH)
+            mqtt.publish("home/living_room/light", {"state": "ON", "trigger": "motion"})
+            print("🚶 Motion detected — Living room lights ON")
+        elif not motion and last_motion:
+            GPIO.output(LIGHT_LR, GPIO.LOW)
+            mqtt.publish("home/living_room/light", {"state": "OFF"})
+            print("💤 No motion — lights OFF")
+        last_motion = motion
+
+        # Temperature every 10 cycles
+        if cycle % 10 == 0:
+            temp, hum = read_dht22()
+            mqtt.publish("home/sensors/climate", {"temp_c": temp, "humidity": hum})
+            print(f"🌡️  {temp}°C  💧 {hum}%")
+            if temp > 24:
+                print("🌬️  AC trigger: temperature above threshold")
+                mqtt.publish("home/hvac/ac", {"state": "cooling"})
+
+        # Simulated doorbell every 30 cycles
+        if cycle % 30 == 0:
+            doorbell_ring()
+
+        time.sleep(0.5)
+except KeyboardInterrupt:
+    GPIO.cleanup()
+    mqtt.publish("home/status", {"state": "offline"})
+    print("\\n🏠 Hub shut down.")
+`,
+  },
+  {
+    id: 'iot-weather-station',
+    title: '🌦️ IoT Weather Station',
+    description: 'A networked weather station that reads temperature & humidity every 30 seconds and POSTs readings to a cloud API. Includes data averaging, alert thresholds, and a rolling 24h history log.',
+    difficulty: 'advanced',
+    estimatedMinutes: 25,
+    tags: ['IoT', 'Networking', 'Sensors'],
+    emoji: '🌦️',
+    components: [
+      { definitionId: 'dht22',     quantity: 1, label: 'DHT22 Primary Sensor' },
+      { definitionId: 'led-green', quantity: 1, label: 'Status LED (green=ok)' },
+      { definitionId: 'led-red',   quantity: 1, label: 'Alert LED (red=threshold)' },
+      { definitionId: 'oled-ssd1306', quantity: 1, label: 'OLED Display' },
+    ],
+    wiring: [
+      { from: 'GPIO22 (Pin 15)', to: 'DHT22 data',      color: 'yellow' },
+      { from: 'GPIO17 (Pin 11)', to: 'Green LED anode', color: 'green' },
+      { from: 'GPIO27 (Pin 13)', to: 'Red LED anode',   color: 'red' },
+      { from: 'SDA (Pin 3)',     to: 'OLED SDA',        color: 'blue',  note: 'I2C data' },
+      { from: 'SCL (Pin 5)',     to: 'OLED SCL',        color: 'white', note: 'I2C clock' },
+      { from: '3V3 (Pin 1)',     to: 'DHT22 VCC',       color: 'red' },
+      { from: 'GND (Pin 6)',     to: 'All grounds',     color: 'black' },
+    ],
+    code: `import RPi.GPIO as GPIO
+import time, json, math, statistics
+
+STATUS_LED = 17
+ALERT_LED  = 27
+TEMP_MAX   = 28.0    # °C alert threshold
+HUM_MIN    = 30.0    # % alert threshold
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([STATUS_LED, ALERT_LED], GPIO.OUT, initial=GPIO.LOW)
+GPIO.output(STATUS_LED, GPIO.HIGH)   # powered on
+
+# ── Cloud API simulator ───────────────────────────────
+def post_to_cloud(payload):
+    url = "https://api.weatherhub.io/v1/readings"
+    print(f"☁️  POST → {url}")
+    print(f"   {json.dumps(payload)}")
+    return {"status": 200, "id": f"rdg_{int(time.time())}"}
+
+# ── Sensor simulator ──────────────────────────────────
+def read_sensor():
+    t = time.time()
+    temp = round(18.0 + 8 * math.sin(t / 180) + (hash(int(t)) % 10) * 0.1, 1)
+    hum  = round(45.0 + 20 * math.sin(t / 300), 1)
+    return temp, hum
+
+history = []
+alerts  = 0
+print("🌦️  Weather Station Online — Device: piforge-ws-001")
+print(f"Thresholds: Temp > {TEMP_MAX}°C | Humidity < {HUM_MIN}%")
+print("-" * 48)
+
+cycle = 0
+try:
+    while True:
+        cycle += 1
+        temp, hum = read_sensor()
+        history.append({"temp": temp, "hum": hum, "ts": int(time.time())})
+        if len(history) > 48: history.pop(0)   # 24 h rolling window
+
+        # Averages
+        avg_t = round(statistics.mean(r["temp"] for r in history), 2)
+        avg_h = round(statistics.mean(r["hum"]  for r in history), 2)
+
+        # Alert check
+        alert = temp > TEMP_MAX or hum < HUM_MIN
+        GPIO.output(ALERT_LED, GPIO.HIGH if alert else GPIO.LOW)
+        if alert:
+            alerts += 1
+            print(f"🚨 ALERT #{alerts}: Temp={temp}°C Hum={hum}%")
+
+        print(f"📊 #{cycle:>3}  Temp:{temp:>5}°C  Hum:{hum:>5}%  "
+              f"(avg {avg_t}°C / {avg_h}%)  samples={len(history)}")
+
+        # Upload every 6 cycles (simulates 30 s interval)
+        if cycle % 6 == 0:
+            resp = post_to_cloud({
+                "device": "piforge-ws-001",
+                "temp_c": temp, "humidity_pct": hum,
+                "avg_temp_c": avg_t, "avg_hum_pct": avg_h,
+                "alerts_total": alerts,
+                "timestamp": int(time.time()),
+            })
+            print(f"   ✅ Stored: {resp['id']}")
+
+        time.sleep(1)
+except KeyboardInterrupt:
+    GPIO.output([STATUS_LED, ALERT_LED], GPIO.LOW)
+    GPIO.cleanup()
+    print(f"\\n✅ Session: {cycle} readings · {alerts} alerts · avg {avg_t}°C")
+`,
+  },
+  {
+    id: 'smart-office',
+    title: '🏢 Smart Office Automation',
+    description: 'Automate a full office: PIR occupancy detection, automatic lighting, energy monitoring, a manual override button, and HTTP logging to a facilities management API.',
+    difficulty: 'advanced',
+    estimatedMinutes: 35,
+    tags: ['IoT', 'SmartHome', 'Networking', 'Sensors', 'GPIO'],
+    emoji: '🏢',
+    components: [
+      { definitionId: 'pir-sensor',  quantity: 1, label: 'PIR Occupancy Sensor' },
+      { definitionId: 'button',      quantity: 1, label: 'Manual Override Button' },
+      { definitionId: 'led-green',   quantity: 1, label: 'Main Office Light' },
+      { definitionId: 'led-blue',    quantity: 1, label: 'Status Indicator' },
+      { definitionId: 'dht22',       quantity: 1, label: 'Climate Sensor' },
+      { definitionId: 'relay',       quantity: 1, label: 'HVAC Relay' },
+    ],
+    wiring: [
+      { from: 'GPIO4  (Pin 7)',  to: 'PIR OUT',           color: 'yellow' },
+      { from: 'GPIO2  (Pin 3)',  to: 'Button one leg',    color: 'orange', note: 'Other leg to GND' },
+      { from: 'GPIO17 (Pin 11)', to: 'Green LED anode',   color: 'green' },
+      { from: 'GPIO18 (Pin 12)', to: 'Blue LED anode',    color: 'blue' },
+      { from: 'GPIO22 (Pin 15)', to: 'DHT22 data',        color: 'white' },
+      { from: 'GPIO27 (Pin 13)', to: 'Relay IN',          color: 'purple', note: 'Controls HVAC' },
+      { from: '3V3   (Pin 1)',  to: 'PIR VCC + DHT VCC',  color: 'red' },
+      { from: 'GND   (Pin 6)',  to: 'All grounds',        color: 'black' },
+    ],
+    code: `import RPi.GPIO as GPIO
+import time, json, math
+
+PIR     = 4
+BUTTON  = 2
+LIGHT   = 17
+STATUS  = 18
+DHT     = 22
+HVAC    = 27
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([LIGHT, STATUS, HVAC], GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(PIR, GPIO.IN)
+GPIO.setup(BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# ── Facilities API ────────────────────────────────────
+class FacilitiesAPI:
+    def log(self, event, data):
+        payload = {"event": event, "data": data, "ts": int(time.time())}
+        print(f"🏢 API → /facilities/log  {json.dumps(payload)}")
+
+api = FacilitiesAPI()
+
+# ── Energy tracking ───────────────────────────────────
+energy_kwh  = 0.0
+on_since    = None
+auto_mode   = True
+occupied    = False
+
+def set_light(state: bool, reason: str):
+    global on_since, energy_kwh
+    GPIO.output(LIGHT, GPIO.HIGH if state else GPIO.LOW)
+    if state and on_since is None:
+        on_since = time.time()
+    elif not state and on_since:
+        h = (time.time() - on_since) / 3600
+        energy_kwh += h * 0.06          # 60 W bulb
+        on_since = None
+        api.log("light_off", {"reason": reason, "energy_kwh": round(energy_kwh, 5)})
+    status = "ON" if state else "OFF"
+    print(f"💡 Light {status} ({reason}) | Energy used: {energy_kwh:.4f} kWh")
+
+def read_climate():
+    t = time.time()
+    return round(21 + 3 * math.sin(t / 200), 1), round(45 + 10 * math.sin(t / 300), 1)
+
+print("🏢 Smart Office System Active")
+print("Auto-mode: ON | Energy monitoring: ON")
+api.log("system_start", {"auto_mode": True})
+GPIO.output(STATUS, GPIO.HIGH)
+
+last_motion = False
+cycle = 0
+try:
+    while True:
+        cycle += 1
+        # Override button toggle
+        if not GPIO.input(BUTTON):
+            auto_mode = not auto_mode
+            print(f"🔘 Manual override — mode: {'AUTO' if auto_mode else 'MANUAL'}")
+            api.log("mode_change", {"auto": auto_mode})
+            time.sleep(0.4)
+
+        motion = bool(GPIO.input(PIR))
+        if auto_mode and motion != last_motion:
+            set_light(motion, "occupancy" if motion else "vacancy timeout")
+            last_motion = motion
+
+        # Climate check every 15 s (30 cycles)
+        if cycle % 30 == 0:
+            temp, hum = read_climate()
+            hvac_on = temp > 23.5
+            GPIO.output(HVAC, GPIO.HIGH if hvac_on else GPIO.LOW)
+            api.log("climate", {"temp_c": temp, "humidity": hum, "hvac": hvac_on})
+            print(f"🌡️  {temp}°C  💧 {hum}%  HVAC: {'ON' if hvac_on else 'OFF'}")
+
+        time.sleep(0.5)
+except KeyboardInterrupt:
+    set_light(False, "shutdown")
+    GPIO.cleanup()
+    print(f"\\n✅ Session: {cycle} cycles | Total energy: {energy_kwh:.4f} kWh")
+`,
+  },
+  {
+    id: 'network-robot',
+    title: '🤖 Network-Controlled Robot',
+    description: 'Control a 2-wheel robot over HTTP. A lightweight Flask web server runs on the Pi, accepting /forward /backward /left /right /stop commands. Use any browser or curl to drive it remotely.',
+    difficulty: 'advanced',
+    estimatedMinutes: 30,
+    tags: ['Networking', 'Motors', 'IoT', 'Advanced'],
+    emoji: '🤖',
+    components: [
+      { definitionId: 'dc-motor',  quantity: 2, label: 'DC Motors (L + R wheel)' },
+      { definitionId: 'hc-sr04',   quantity: 1, label: 'HC-SR04 (obstacle guard)' },
+      { definitionId: 'led-red',   quantity: 1, label: 'Status LED' },
+    ],
+    wiring: [
+      { from: 'GPIO17 (Pin 11)', to: 'Left motor IN1',  color: 'green' },
+      { from: 'GPIO18 (Pin 12)', to: 'Left motor IN2',  color: 'green' },
+      { from: 'GPIO22 (Pin 15)', to: 'Right motor IN1', color: 'blue' },
+      { from: 'GPIO23 (Pin 16)', to: 'Right motor IN2', color: 'blue' },
+      { from: 'GPIO24 (Pin 18)', to: 'HC-SR04 TRIG',   color: 'yellow' },
+      { from: 'GPIO25 (Pin 22)', to: 'HC-SR04 ECHO',   color: 'orange' },
+      { from: 'GND   (Pin 6)',  to: 'All grounds',     color: 'black' },
+    ],
+    code: `import RPi.GPIO as GPIO
+import time, math
+
+# ── Motor driver pins ─────────────────────────────────
+L1, L2 = 17, 18   # Left  wheel
+R1, R2 = 22, 23   # Right wheel
+TRIG, ECHO = 24, 25
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([L1, L2, R1, R2, TRIG], GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(ECHO, GPIO.IN)
+
+def drive(l1, l2, r1, r2):
+    GPIO.output(L1, l1); GPIO.output(L2, l2)
+    GPIO.output(R1, r1); GPIO.output(R2, r2)
+
+def stop():    drive(0,0,0,0); print("⏹  STOP")
+def forward(): drive(1,0,1,0); print("⬆  FORWARD")
+def backward():drive(0,1,0,1); print("⬇  BACKWARD")
+def left():    drive(0,1,1,0); print("⬅  LEFT")
+def right():   drive(1,0,0,1); print("➡  RIGHT")
+
+def measure_distance():
+    GPIO.output(TRIG, GPIO.HIGH); time.sleep(0.00001); GPIO.output(TRIG, GPIO.LOW)
+    start = end = time.time()
+    while not GPIO.input(ECHO): start = time.time()
+    while GPIO.input(ECHO):     end   = time.time()
+    return round((end - start) * 17150, 1)
+
+# ── Simulated HTTP server ─────────────────────────────
+class HTTPRobotServer:
+    def __init__(self):
+        self.routes = {
+            "/forward":  forward,
+            "/backward": backward,
+            "/left":     left,
+            "/right":    right,
+            "/stop":     stop,
+        }
+    def handle(self, path):
+        fn = self.routes.get(path)
+        if fn:
+            dist = measure_distance()
+            if path == "/forward" and dist < 15:
+                print(f"🚧 Obstacle at {dist} cm — blocked!")
+                return {"error": "obstacle", "distance_cm": dist}
+            fn()
+            return {"ok": True, "distance_cm": dist}
+        return {"error": "not found"}
+
+server = HTTPRobotServer()
+print("🤖 Robot Server on http://pi.local:5000")
+print("Routes: /forward /backward /left /right /stop")
+print("Simulating command sequence...")
+print()
+
+# Demo sequence
+for cmd, delay in [("/forward",0.8),("/right",0.4),("/forward",0.6),("/left",0.4),("/stop",0)]:
+    resp = server.handle(cmd)
+    print(f"   GET {cmd} → {resp}")
+    time.sleep(delay)
+
+print("\\nRobot ready. In real deployment: pip install flask")
+GPIO.cleanup()
+`,
+  },
+  {
+    id: 'arduino-smart-controller',
+    title: '🔵 Arduino Smart LED Controller',
+    description: 'An Arduino Uno project: a potentiometer controls LED brightness (PWM), a button toggles between auto-breathing and manual modes, and everything reports to Serial Monitor. Great intro to Arduino C++.',
+    difficulty: 'intermediate',
+    estimatedMinutes: 15,
+    tags: ['Arduino', 'PWM', 'GPIO'],
+    emoji: '🔵',
+    components: [
+      { definitionId: 'led-blue',      quantity: 1, label: 'Blue LED (PWM output)' },
+      { definitionId: 'potentiometer', quantity: 1, label: 'Potentiometer (brightness)' },
+      { definitionId: 'button',        quantity: 1, label: 'Mode Toggle Button' },
+      { definitionId: 'resistor',      quantity: 2, label: '330Ω Resistors' },
+    ],
+    wiring: [
+      { from: 'D9~  (PWM)',  to: 'LED anode (+)',     color: 'blue', note: 'PWM pin for dimming' },
+      { from: 'GND',         to: 'LED cathode (−)',   color: 'black' },
+      { from: 'A0',          to: 'Potentiometer wiper',color: 'orange', note: 'Middle pin' },
+      { from: '5V',          to: 'Pot left pin',      color: 'red' },
+      { from: 'GND',         to: 'Pot right pin',     color: 'black' },
+      { from: 'D2',          to: 'Button one leg',    color: 'yellow', note: 'Other leg to GND' },
+    ],
+    code: `// Arduino Smart LED Controller
+// Potentiometer dims LED · Button toggles modes
+
+const int LED_PIN    = 9;   // PWM
+const int POT_PIN    = A0;
+const int BTN_PIN    = 2;
+
+bool  manualMode  = false;
+int   brightness  = 0;
+bool  lastBtn     = HIGH;
+unsigned long lastMsg = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BTN_PIN, INPUT_PULLUP);
+  Serial.println("=== Smart LED Controller ===");
+  Serial.println("Hold button to toggle Auto / Manual mode");
+}
+
+void loop() {
+  // Button press detection
+  bool btn = digitalRead(BTN_PIN);
+  if (btn == LOW && lastBtn == HIGH) {
+    manualMode = !manualMode;
+    Serial.print("Mode switched → ");
+    Serial.println(manualMode ? "MANUAL (pot)" : "AUTO (breathe)");
+    delay(50);
+  }
+  lastBtn = btn;
+
+  if (manualMode) {
+    // Pot controls brightness
+    int raw = analogRead(POT_PIN);
+    brightness = map(raw, 0, 1023, 0, 255);
+  } else {
+    // Sine-wave breathing effect
+    float t = millis() / 1000.0;
+    brightness = (int)((sin(t * 1.8) + 1.0) * 127.5);
+  }
+
+  analogWrite(LED_PIN, brightness);
+
+  // Serial log every 250 ms
+  if (millis() - lastMsg > 250) {
+    lastMsg = millis();
+    Serial.print("Brightness: ");
+    Serial.print(brightness);
+    Serial.print(" / 255   Mode: ");
+    Serial.println(manualMode ? "Manual" : "Auto");
+  }
+}
+`,
+  },
+  {
+    id: 'pico-env-monitor',
+    title: '🟣 Pico Environmental Monitor',
+    description: 'Run MicroPython on a Pi Pico W. Read two analog sensors, calculate air quality index, and broadcast readings over WiFi using the built-in CYW43439 wireless chip.',
+    difficulty: 'advanced',
+    estimatedMinutes: 25,
+    tags: ['MicroPython', 'IoT', 'Networking', 'Sensors'],
+    emoji: '🟣',
+    components: [
+      { definitionId: 'potentiometer', quantity: 2, label: 'Analog sensors (GP26 + GP27)' },
+      { definitionId: 'led-green',     quantity: 1, label: 'Status LED (GP15)' },
+      { definitionId: 'led-red',       quantity: 1, label: 'Alert LED (GP14)' },
+      { definitionId: 'oled-ssd1306',  quantity: 1, label: 'OLED (I2C SDA=GP4 SCL=GP5)' },
+    ],
+    wiring: [
+      { from: 'GP26 (ADC0)', to: 'Sensor 1 wiper',   color: 'yellow', note: 'Temperature analog' },
+      { from: 'GP27 (ADC1)', to: 'Sensor 2 wiper',   color: 'orange', note: 'Air quality analog' },
+      { from: 'GP15',        to: 'Green LED anode',  color: 'green' },
+      { from: 'GP14',        to: 'Red LED anode',    color: 'red' },
+      { from: 'GP4 (SDA)',   to: 'OLED SDA',         color: 'blue' },
+      { from: 'GP5 (SCL)',   to: 'OLED SCL',         color: 'white' },
+      { from: '3V3',         to: 'Sensor VCC',       color: 'red' },
+      { from: 'GND',         to: 'All grounds',      color: 'black' },
+    ],
+    code: `# MicroPython — Pi Pico W Environmental Monitor
+# Reads analog sensors, calculates AQI, broadcasts over WiFi
+
+import machine, time, math, json
+
+# ── Hardware setup ────────────────────────────────────
+adc_temp = machine.ADC(26)      # GP26
+adc_aqi  = machine.ADC(27)      # GP27
+led_ok   = machine.Pin(15, machine.Pin.OUT)
+led_alert= machine.Pin(14, machine.Pin.OUT)
+
+# ── WiFi (simulated) ──────────────────────────────────
+class WiFi:
+    ssid = "SmartHome-2.4G"
+    def connect(self):
+        print(f"📶 Connecting to '{self.ssid}'...")
+        time.sleep(0.5)
+        print(f"✅ Connected — IP: 192.168.1.42")
+    def post(self, url, data):
+        print(f"☁️  POST {url}")
+        print(f"   {json.dumps(data)}")
+
+wifi = WiFi()
+wifi.connect()
+
+def read_sensors():
+    raw_t = adc_temp.read_u16()
+    raw_a = adc_aqi.read_u16()
+    t = time.time()
+    # Simulate realistic values with slow drift
+    temp = round(18 + 8 * math.sin(t / 120), 1)
+    aqi  = int(20 + 180 * math.sin(t / 300) ** 2)
+    return temp, aqi
+
+def aqi_category(aqi):
+    if aqi <  50: return "Good",      led_ok, False
+    if aqi < 100: return "Moderate",  led_ok, False
+    if aqi < 150: return "Unhealthy", led_alert, True
+    return "Hazardous", led_alert, True
+
+print("🌍 Pico W Environmental Monitor v1.0")
+print(f"Sampling: ADC0=temp ADC1=air_quality")
+print("-" * 44)
+
+readings = []
+cycle = 0
+while True:
+    cycle += 1
+    temp, aqi = read_sensors()
+    category, active_led, alert = aqi_category(aqi)
+
+    led_ok.value(0);    led_alert.value(0)
+    active_led.value(1)
+
+    readings.append({"temp": temp, "aqi": aqi})
+    if len(readings) > 60: readings.pop(0)
+
+    avg_temp = round(sum(r["temp"] for r in readings) / len(readings), 1)
+    avg_aqi  = round(sum(r["aqi"]  for r in readings) / len(readings))
+
+    print(f"#{cycle:>3}  🌡️ {temp}°C (avg {avg_temp})  "
+          f"💨 AQI {aqi:>3} [{category}] (avg {avg_aqi})")
+
+    if alert:
+        print(f"     🚨 Air quality alert! AQI={aqi}")
+
+    # Upload every 10 cycles
+    if cycle % 10 == 0:
+        wifi.post("https://env.piforge.io/v1/reading", {
+            "device": "pico-env-001",
+            "temp_c": temp, "aqi": aqi,
+            "avg_temp": avg_temp, "avg_aqi": avg_aqi,
+            "alert": alert,
+        })
+
+    time.sleep(1)
+`,
+  },
+  {
+    id: 'home-security-pro',
+    title: '🔐 Home Security System Pro',
+    description: 'A production-grade multi-zone security system: PIR detects motion, a button simulates a door sensor, a buzzer sounds the alarm, and the system sends SMS/email alerts — with arm/disarm and entry delay.',
+    difficulty: 'advanced',
+    estimatedMinutes: 30,
+    tags: ['SmartHome', 'IoT', 'Networking', 'Sensors', 'Advanced'],
+    emoji: '🔐',
+    components: [
+      { definitionId: 'pir-sensor', quantity: 1, label: 'PIR (Zone 1: Front door)' },
+      { definitionId: 'button',     quantity: 1, label: 'Door Reed Switch (Zone 2)' },
+      { definitionId: 'buzzer',     quantity: 1, label: 'Siren / Buzzer' },
+      { definitionId: 'led-red',    quantity: 1, label: 'Armed LED' },
+      { definitionId: 'led-green',  quantity: 1, label: 'Disarmed / OK LED' },
+    ],
+    wiring: [
+      { from: 'GPIO4  (Pin 7)',  to: 'PIR OUT',        color: 'yellow' },
+      { from: 'GPIO2  (Pin 3)',  to: 'Door switch',    color: 'orange', note: 'Pulled up — LOW = open' },
+      { from: 'GPIO18 (Pin 12)', to: 'Buzzer +',       color: 'red' },
+      { from: 'GPIO17 (Pin 11)', to: 'Red LED anode',  color: 'red' },
+      { from: 'GPIO27 (Pin 13)', to: 'Green LED anode',color: 'green' },
+      { from: '3V3   (Pin 1)',  to: 'PIR VCC',        color: 'red' },
+      { from: 'GND   (Pin 6)',  to: 'All grounds',    color: 'black' },
+    ],
+    code: `import RPi.GPIO as GPIO
+import time, json
+
+PIR   = 4;  DOOR  = 2
+SIREN = 18; LED_A = 17; LED_OK = 27
+
+ENTRY_DELAY   = 5    # seconds
+ZONES = {"PIR Front": PIR, "Door Zone 2": DOOR}
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([SIREN, LED_A, LED_OK], GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(PIR, GPIO.IN)
+GPIO.setup(DOOR, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# ── Notification hub ──────────────────────────────────
+def notify(channel, msg, data=None):
+    payload = {"channel": channel, "message": msg, "data": data or {}}
+    print(f"📱 {channel.upper()} → {msg}  {json.dumps(data or {})}")
+
+# ── Alarm ─────────────────────────────────────────────
+armed = False
+alarm_active = False
+
+def arm(exit_delay=5):
+    global armed
+    GPIO.output(LED_OK, GPIO.LOW)
+    print(f"🔒 Arming in {exit_delay}s — please leave...")
+    for i in range(exit_delay, 0, -1):
+        GPIO.output(SIREN, GPIO.HIGH); time.sleep(0.05)
+        GPIO.output(SIREN, GPIO.LOW);  time.sleep(0.95)
+        print(f"   {i}...")
+    armed = True
+    GPIO.output(LED_A, GPIO.HIGH)
+    notify("app", "System ARMED", {"zones": list(ZONES.keys())})
+    print("🔒 ARMED — all zones active")
+
+def disarm():
+    global armed, alarm_active
+    armed = alarm_active = False
+    GPIO.output(SIREN, GPIO.LOW)
+    GPIO.output(LED_A, GPIO.LOW)
+    GPIO.output(LED_OK, GPIO.HIGH)
+    notify("app", "System DISARMED")
+    print("🔓 DISARMED")
+
+def trigger(zone):
+    global alarm_active
+    if alarm_active: return
+    alarm_active = True
+    notify("sms",   f"ALARM — {zone}", {"zone": zone, "ts": int(time.time())})
+    notify("email", f"Intrusion detected: {zone}")
+    notify("call",  "Emergency contact dialing...")
+    print(f"\\n🚨🚨🚨  ALARM — {zone}  🚨🚨🚨")
+
+GPIO.output(LED_OK, GPIO.HIGH)
+print("🔐 Security System Pro — Standby")
+arm(exit_delay=3)
+
+try:
+    while True:
+        if armed:
+            motion    = bool(GPIO.input(PIR))
+            door_open = not bool(GPIO.input(DOOR))
+
+            if door_open:
+                print(f"⚠️  Door opened — {ENTRY_DELAY}s entry delay")
+                for _ in range(ENTRY_DELAY * 2):
+                    GPIO.output(SIREN, GPIO.HIGH); time.sleep(0.1)
+                    GPIO.output(SIREN, GPIO.LOW);  time.sleep(0.4)
+                if door_open:          # still open after delay?
+                    trigger("Door Zone 2")
+
+            if motion and not alarm_active:
+                trigger("PIR Front")
+
+            if alarm_active:
+                GPIO.output(SIREN, GPIO.HIGH)
+                time.sleep(0.3)
+                GPIO.output(SIREN, GPIO.LOW)
+                time.sleep(0.2)
+        time.sleep(0.3)
+except KeyboardInterrupt:
+    disarm(); GPIO.cleanup()
+    print("System shut down.")
+`,
+  },
+);
+
 export function getProject(id: string): Project | undefined {
   return projects.find(p => p.id === id);
 }
 
 export function getProjectsByDifficulty(d: Project['difficulty']): Project[] {
   return projects.filter(p => p.difficulty === d);
+}
+
+export function getProjectsByTag(tag: Project['tags'][number]): Project[] {
+  return projects.filter(p => p.tags.includes(tag));
 }
