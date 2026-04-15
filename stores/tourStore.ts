@@ -65,10 +65,12 @@ interface TourState {
   isActive: boolean;
   step: number;
   hasSeenTour: boolean;
+  hasSeenWelcome: boolean;
   start: () => void;
   next: () => void;
   back: () => void;
   skip: () => void;
+  dismissWelcome: () => void;
 }
 
 export const useTourStore = create<TourState>()(
@@ -77,6 +79,8 @@ export const useTourStore = create<TourState>()(
       isActive: false,
       step: 0,
       hasSeenTour: false,
+      hasSeenWelcome: false,
+      dismissWelcome: () => set({ hasSeenWelcome: true }),
       start: () => set({ isActive: true, step: 0 }),
       next: () => {
         const { step } = get();

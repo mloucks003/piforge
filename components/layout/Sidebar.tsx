@@ -7,6 +7,10 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore, isPro } from '@/stores/authStore';
 import { getComponentDefinition } from '@/lib/components';
 import { projects } from '@/lib/projects';
+import { toast } from '@/stores/toastStore';
+import { useContextPromptStore } from '@/stores/contextPromptStore';
+import { useTutorialStore } from '@/stores/tutorialStore';
+import { tutorials } from '@/lib/tutorials';
 
 type Tab = 'parts' | 'projects';
 
@@ -72,6 +76,8 @@ export default function Sidebar() {
   const user          = useAuthStore((s) => s.user);
   const openModal     = useAuthStore((s) => s.openModal);
   const userIsPro     = isPro(user);
+  const showPrompt    = useContextPromptStore((s) => s.show);
+  const startTutorial = useTutorialStore((s) => s.start);
 
   const toggleCat = useCallback((cat: string) => {
     setClosedCats(prev => {
@@ -87,14 +93,44 @@ export default function Sidebar() {
     if (!def) return;
     const bp = useProjectStore.getState().boardPosition;
     addComponent({ id: def.id, name: def.name, category: def.category, pins: def.pins }, { x: bp.x + 220, y: bp.y + 160 });
+    toast.success(`${entry.name} added to canvas`, { icon: entry.icon, duration: 1800 });
   }, [addComponent, userIsPro, openModal]);
+
+  // Tags that warrant a contextual tutorial offer
+  const ADVANCED_TAGS = new Set(['IoT', 'SmartHome', 'Networking', 'Advanced', 'MicroPython', 'Arduino']);
 
   const handleLoadProject = useCallback((projectId: string) => {
     const p = projects.find(x => x.id === projectId);
     if (!p) return;
     setCode(p.code);
     setExpanded(null);
-  }, [setCode]);
+    toast.success(`${p.title} loaded into editor`, { icon: p.emoji, duration: 3000,
+      action: { label: 'View wiring →', onClick: () => setExpanded(projectId) } });
+
+    // Offer tutorial for advanced / IoT / smart-home projects
+    const isAdvanced = p.difficulty === 'advanced' || p.tags.some(t => ADVANCED_TAGS.has(t));
+    if (isAdvanced) {
+      // Find a matching tutorial by ID prefix, or suggest the blink one
+      const matchedTut = tutorials.find(t => t.id === p.id) ?? null;
+      showPrompt({
+        key: `project-${p.id}`,
+        icon: p.emoji,
+        title: `${p.title} — want a walkthrough?`,
+        body: matchedTut
+          ? `This is an advanced project. The guided tutorial spotlights exactly what to wire and where to click at every step.`
+          : `This is an advanced project with ${p.components.length} components and ${p.wiring.length} wiring steps. Check the wiring guide in the Projects tab — each connection is listed in order.`,
+        primaryLabel: matchedTut ? '🎓 Start tutorial' : '📋 Show wiring steps',
+        onPrimary: () => {
+          if (matchedTut) {
+            startTutorial(matchedTut);
+          } else {
+            setExpanded(p.id);
+            toast.info('Wiring steps expanded in the Projects tab', { duration: 2500 });
+          }
+        },
+      });
+    }
+  }, [setCode, setExpanded, showPrompt, startTutorial]);
 
   // Filtered + grouped component list
   const q = query.toLowerCase().trim();

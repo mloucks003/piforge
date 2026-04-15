@@ -17,6 +17,9 @@ import { loadFromLocalStorage } from '@/lib/serialization/serializer';
 import { GPIOMock } from '@/lib/simulation/gpio-mock';
 import { resolveCircuit } from '@/lib/simulation/circuit-resolver';
 import { generateBuildGuide, downloadBuildGuide } from '@/lib/export/build-guide';
+import { toast } from '@/stores/toastStore';
+import { useContextPromptStore } from '@/stores/contextPromptStore';
+import { projects } from '@/lib/projects';
 
 /** Singleton GPIO mock + engine, created once on first render. */
 let _gpio: GPIOMock | null = null;
@@ -59,6 +62,8 @@ export default function TopBar() {
   const saveProject        = useProjectManagerStore((s) => s.saveProject);
   const activeEnvironment    = useCanvasStore((s) => s.activeEnvironment);
   const setActiveEnvironment = useCanvasStore((s) => s.setActiveEnvironment);
+  const showPrompt           = useContextPromptStore((s) => s.show);
+  const setCode              = useProjectStore((s) => s.setCode);
 
   // Keyboard shortcuts: Ctrl+Z, Ctrl+Y/Shift+Z, Ctrl+S
   useEffect(() => {
@@ -239,7 +244,16 @@ export default function TopBar() {
                       <div className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest ${color}`}>{label}</div>
                       {groupBoards.map(b => (
                         <button key={b.id}
-                          onClick={() => { setBoardModel(b.id); setBoardMenuOpen(false); }}
+                          onClick={() => {
+                            if (b.id !== boardModel) {
+                              setBoardModel(b.id);
+                              const lang = b.lang === 'cpp' ? 'C++' : b.lang === 'micropython' ? 'MicroPython' : 'Python';
+                              toast.success(`Switched to ${b.name}`, { icon: '🖥️', duration: 2500,
+                                action: undefined });
+                              toast.info(`Language set to ${lang}`, { duration: 2000 });
+                            }
+                            setBoardMenuOpen(false);
+                          }}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
                             ${boardModel === b.id
                               ? 'bg-green-500/10 text-green-400 font-semibold'
@@ -383,14 +397,56 @@ export default function TopBar() {
         {/* ── Environment picker ── */}
         <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5" title="Smart Home / Office floor plan overlay">
           <button
-            onClick={() => setActiveEnvironment(activeEnvironment === 'home' ? null : 'home')}
+            onClick={() => {
+              const next = activeEnvironment === 'home' ? null : 'home';
+              setActiveEnvironment(next);
+              if (next === 'home') {
+                toast.info('Smart Home floor plan enabled', { icon: '🏠', duration: 2500 });
+                const homeProject = projects.find(p => p.id === 'smart-home-hub');
+                if (homeProject) {
+                  showPrompt({
+                    key: 'env-home',
+                    icon: '🏠',
+                    title: 'Want a guided walkthrough?',
+                    body: "You've opened the Smart Home floor plan. Load the Smart Home Hub project to see how PIR motion, DHT22 temperature, and MQTT-controlled lighting come together.",
+                    primaryLabel: '✨ Load Smart Home Hub',
+                    secondaryLabel: 'Just the floor plan',
+                    onPrimary: () => {
+                      setCode(homeProject.code);
+                      toast.success('Smart Home Hub loaded! Check the Projects tab for wiring steps.', { icon: '🏠', duration: 4000 });
+                    },
+                  });
+                }
+              }
+            }}
             className={`rounded p-1.5 transition-colors ${activeEnvironment === 'home' ? 'bg-green-500/20 text-green-400' : 'text-muted-foreground hover:text-foreground'}`}
             title="Smart Home floor plan"
           >
             <Home className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={() => setActiveEnvironment(activeEnvironment === 'office' ? null : 'office')}
+            onClick={() => {
+              const next = activeEnvironment === 'office' ? null : 'office';
+              setActiveEnvironment(next);
+              if (next === 'office') {
+                toast.info('Smart Office floor plan enabled', { icon: '🏢', duration: 2500 });
+                const officeProject = projects.find(p => p.id === 'smart-office');
+                if (officeProject) {
+                  showPrompt({
+                    key: 'env-office',
+                    icon: '🏢',
+                    title: 'Want a guided walkthrough?',
+                    body: "You've opened the Smart Office floor plan. Load the Smart Office Automation project to see occupancy detection, HVAC control, energy tracking, and facility API logging.",
+                    primaryLabel: '✨ Load Smart Office',
+                    secondaryLabel: 'Just the floor plan',
+                    onPrimary: () => {
+                      setCode(officeProject.code);
+                      toast.success('Smart Office Automation loaded! Check the Projects tab for wiring steps.', { icon: '🏢', duration: 4000 });
+                    },
+                  });
+                }
+              }
+            }}
             className={`rounded p-1.5 transition-colors ${activeEnvironment === 'office' ? 'bg-blue-500/20 text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}
             title="Smart Office floor plan"
           >

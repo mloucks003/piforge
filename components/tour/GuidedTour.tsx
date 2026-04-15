@@ -16,17 +16,17 @@ function getTargetRect(target: string): Rect | null {
 }
 
 export default function GuidedTour() {
-  const { isActive, step, next, back, skip, hasSeenTour, start } = useTourStore();
+  const { isActive, step, next, back, skip, hasSeenTour, hasSeenWelcome, start } = useTourStore();
   const [rect, setRect] = useState<Rect | null>(null);
   const current = TOUR_STEPS[step];
 
-  // Auto-start for first-time users
+  // Only auto-start after the welcome modal has been dismissed
   useEffect(() => {
-    if (!hasSeenTour) {
-      const t = setTimeout(() => start(), 1200);
+    if (!hasSeenTour && hasSeenWelcome) {
+      const t = setTimeout(() => start(), 600);
       return () => clearTimeout(t);
     }
-  }, [hasSeenTour, start]);
+  }, [hasSeenTour, hasSeenWelcome, start]);
 
   const measure = useCallback(() => {
     if (!isActive || !current) return;

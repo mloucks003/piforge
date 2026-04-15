@@ -9,6 +9,9 @@ import RightPanel from '@/components/layout/RightPanel';
 import Console from '@/components/layout/Console';
 import GuidedTour from '@/components/tour/GuidedTour';
 import TutorialOverlay from '@/components/tour/TutorialOverlay';
+import WelcomeModal from '@/components/tour/WelcomeModal';
+import ContextualPrompt from '@/components/tour/ContextualPrompt';
+import Toaster from '@/components/ui/Toaster';
 
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -20,8 +23,11 @@ export default function LabPage() {
   return (
     <div className="flex h-screen min-w-[1024px] flex-col">
       <AutoLoader />
+      <WelcomeModal />
       <GuidedTour />
       <TutorialOverlay />
+      <ContextualPrompt />
+      <Toaster />
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
