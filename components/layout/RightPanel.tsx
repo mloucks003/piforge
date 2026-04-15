@@ -233,7 +233,7 @@ export default function RightPanel() {
   const language = useProjectStore((s) => s.language);
   const setCode  = useProjectStore((s) => s.setCode);
   const setLanguage = useProjectStore((s) => s.setLanguage);
-  const { setActiveMode, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError, apiKey } = useAIStore();
+  const { setActiveMode, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError } = useAIStore();
 
   const handleTemplateSelect = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -257,9 +257,9 @@ export default function RightPanel() {
         : 'Please diagnose the errors in the console output and provide fixed code.';
 
       const { default: sendHelper } = await import('@/lib/ai/sendMessage');
-      sendHelper(prompt, mode, apiKey, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError);
+      sendHelper(prompt, mode, '', addMessage, appendStreamChunk, finalizeStream, setStreaming, setError);
     }, 50);
-  }, [setActiveMode, apiKey, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError]);
+  }, [setActiveMode, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError]);
 
   const TABS = [
     ['editor', 'Editor', Code],

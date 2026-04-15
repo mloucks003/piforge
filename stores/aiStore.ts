@@ -18,14 +18,12 @@ interface AIState {
   messages: AIMessage[];
   streaming: boolean;
   streamingContent: string;
-  apiKey: string;                  // user-supplied OpenAI key (persisted)
-  serverHasKey: boolean | null;    // null = not checked yet; true = server key configured
+  serverHasKey: boolean | null;    // null = still checking; true/false after status call
   panelOpen: boolean;
   activeMode: AIMode;
   error: string | null;
 
   // Actions
-  setApiKey: (key: string) => void;
   checkServerKey: () => Promise<void>;
   setPanelOpen: (open: boolean) => void;
   setActiveMode: (mode: AIMode) => void;
@@ -43,23 +41,21 @@ export const useAIStore = create<AIState>()(
       messages: [],
       streaming: false,
       streamingContent: '',
-      apiKey: '',
       serverHasKey: null,
       panelOpen: false,
       activeMode: 'chat',
       error: null,
 
-      setApiKey: (key) => set({ apiKey: key }),
-
       checkServerKey: async () => {
         // Only check once per session
-        if (useAIStore.getState().serverHasKey !== null) return;
+        if (get().serverHasKey !== null) return;
         try {
           const res = await fetch('/api/ai/status');
           const data = await res.json() as { hasServerKey: boolean };
           set({ serverHasKey: data.hasServerKey });
         } catch {
-          set({ serverHasKey: false });
+          // If status check fails, assume server key is present and let the API call fail gracefully
+          set({ serverHasKey: true });
         }
       },
       setPanelOpen: (open) => set({ panelOpen: open }),
@@ -102,8 +98,8 @@ export const useAIStore = create<AIState>()(
     }),
     {
       name: 'piforge-ai',
-      // Only persist apiKey and messages (not streaming state)
-      partialize: (s) => ({ apiKey: s.apiKey, messages: s.messages.slice(-40) }),
+      // Only persist recent messages (not streaming state or server key status)
+      partialize: (s) => ({ messages: s.messages.slice(-40) }),
     }
   )
 );
