@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://piforge.dev';
+const SITE_URL = 'https://getpiforge.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {

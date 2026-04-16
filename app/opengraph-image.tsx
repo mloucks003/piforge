@@ -62,7 +62,7 @@ export default function Image() {
         {/* URL badge */}
         <div style={{ position: 'absolute', bottom: 36, display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
-          <span style={{ fontSize: 18, color: '#52525b', letterSpacing: '0.05em' }}>piforge.dev</span>
+          <span style={{ fontSize: 18, color: '#52525b', letterSpacing: '0.05em' }}>getpiforge.com</span>
         </div>
       </div>
     ),

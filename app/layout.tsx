@@ -6,7 +6,7 @@ import AuthProvider from "@/components/auth/AuthProvider";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-const SITE_URL = "https://piforge.dev";
+const SITE_URL = "https://getpiforge.com";
 const SITE_NAME = "PiForge";
 const TITLE = "PiForge — Free Online Raspberry Pi & Arduino Simulator";
 const DESCRIPTION =
