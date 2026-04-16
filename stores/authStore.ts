@@ -38,10 +38,19 @@ interface AuthState {
 }
 
 const PROMO_CODES: Record<string, Plan> = {
-  testdev: 'pro',
-  TESTDEV: 'pro',
-  edu2025: 'education',
-  EDU2025: 'education',
+  testdev:       'pro',
+  TESTDEV:       'pro',
+  edu2025:       'education',
+  EDU2025:       'education',
+  // Beta / feedback lifetime codes
+  EARLYADOPTER:  'pro',
+  earlyadopter:  'pro',
+  THANKYOU:      'pro',
+  thankyou:      'pro',
+  BETAFEEDBACK:  'pro',
+  betafeedback:  'pro',
+  LIFETIME:      'pro',
+  lifetime:      'pro',
 };
 
 export const useAuthStore = create<AuthState>()(

@@ -4,8 +4,9 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import {
   Play, Pause, Square, Download,
   Cpu, Loader2, Image, FileText, RefreshCw,
-  Undo2, Redo2, FolderOpen, ChevronDown, HelpCircle, Home, Building2,
+  Undo2, Redo2, FolderOpen, ChevronDown, HelpCircle, Home, Building2, MessageSquare,
 } from 'lucide-react';
+import { useFeedbackStore } from '@/stores/feedbackStore';
 import { useTourStore } from '@/stores/tourStore';
 import { BOARD_CATALOG } from '@/lib/boards';
 import { useProjectStore } from '@/stores/projectStore';
@@ -47,6 +48,7 @@ const PLAN_COLORS: Record<string, string> = {
 export default function TopBar() {
   const boardModel = useProjectStore((s) => s.boardModel);
   const startTour = useTourStore((s) => s.start);
+  const openFeedback = useFeedbackStore((s) => s.openModal);
   const setBoardModel = useProjectStore((s) => s.setBoardModel);
   const simulationState = useProjectStore((s) => s.simulationState);
   const engineRef = useRef<SimulationEngine | null>(null);
@@ -461,6 +463,16 @@ export default function TopBar() {
           title="Take a guided tour"
         >
           <HelpCircle className="h-4 w-4" />
+        </button>
+
+        {/* ── Feedback button ── */}
+        <button
+          onClick={openFeedback}
+          className="flex items-center gap-1.5 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-yellow-400 hover:bg-yellow-500/20 transition-colors"
+          title="Send feedback or report a bug — earn a lifetime license!"
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          Feedback
         </button>
 
         {/* ── User / Auth ── */}

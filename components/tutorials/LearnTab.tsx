@@ -233,8 +233,8 @@ function TutorialsTab() {
           className="w-full flex items-center gap-3 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-left hover:bg-blue-500/10 transition-colors">
           <Lock className="h-4 w-4 text-blue-400 shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-blue-400">Pro unlocks all 9 tutorials</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Free plan includes 2 beginner tutorials. Use code <span className="text-green-400 font-mono">testdev</span> for free access.</p>
+            <p className="text-xs font-semibold text-blue-400">Unlock all {tutorials.length} tutorials free during beta</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Use code <span className="text-green-400 font-mono">TESTDEV</span> for instant Pro access — no credit card needed.</p>
           </div>
         </button>
       )}
@@ -267,32 +267,10 @@ function TutorialsTab() {
   );
 }
 
-// ── Root export: Tutorials | Docs tab switcher ───────────────────────────────
+// ── Named exports so RightPanel can render each as its own top-level tab ──────
+export { DocsTab, TutorialsTab };
+
+// ── Default export is the tutorials panel (backward compat) ──────────────────
 export default function LearnTab() {
-  const [tab, setTab] = useState<'tutorials' | 'docs'>('tutorials');
-
-  return (
-    <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
-      {/* Sub-tab bar */}
-      <div className="shrink-0 flex border-b border-border">
-        <button
-          onClick={() => setTab('tutorials')}
-          className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2 ${tab === 'tutorials' ? 'border-green-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <GraduationCap className="h-3.5 w-3.5" /> Tutorials
-        </button>
-        <button
-          onClick={() => setTab('docs')}
-          className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2 ${tab === 'docs' ? 'border-blue-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <BookOpen className="h-3.5 w-3.5" /> Docs
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-        {tab === 'tutorials' ? <TutorialsTab /> : <DocsTab />}
-      </div>
-    </div>
-  );
+  return <TutorialsTab />;
 }

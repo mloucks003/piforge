@@ -2,14 +2,14 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen } from 'lucide-react';
+import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAIStore } from '@/stores/aiStore';
 import { templates } from '@/lib/templates/index';
 import { resolveCircuit } from '@/lib/simulation/circuit-resolver';
 import { getComponentDefinition } from '@/lib/components';
 import AIPanel from '@/components/ai/AIPanel';
-import LearnTab from '@/components/tutorials/LearnTab';
+import { TutorialsTab, DocsTab } from '@/components/tutorials/LearnTab';
 
 // Configure Monaco to load workers from CDN — avoids Next.js/Turbopack worker issues
 const MonacoEditor = dynamic(
@@ -30,7 +30,7 @@ const MonacoEditor = dynamic(
   }
 );
 
-type Tab = 'editor' | 'properties' | 'ai' | 'learn';
+type Tab = 'editor' | 'properties' | 'tutorials' | 'docs' | 'ai';
 
 function PropertiesTab() {
   const components      = useProjectStore((s) => s.components);
@@ -232,6 +232,8 @@ export default function RightPanel() {
   const code     = useProjectStore((s) => s.code);
   const language = useProjectStore((s) => s.language);
   const setCode  = useProjectStore((s) => s.setCode);
+  // Map project language to Monaco language ID
+  const monacoLang = language === 'cpp' ? 'cpp' : 'python';
   const setLanguage = useProjectStore((s) => s.setLanguage);
   const { setActiveMode, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError } = useAIStore();
 
@@ -262,10 +264,11 @@ export default function RightPanel() {
   }, [setActiveMode, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError]);
 
   const TABS = [
-    ['editor', 'Editor', Code],
-    ['properties', 'Circuit', Cpu],
-    ['learn', 'Docs', BookOpen],
-    ['ai', 'AI', Sparkles],
+    ['editor',     'Editor',    Code],
+    ['properties', 'Circuit',   Cpu],
+    ['tutorials',  'Learn',     GraduationCap],
+    ['docs',       'Docs',      BookOpen],
+    ['ai',         'AI',        Sparkles],
   ] as const;
 
   return (
@@ -274,7 +277,7 @@ export default function RightPanel() {
       <div className="flex shrink-0 border-b border-border">
         {TABS.map(([id, label, Icon]) => (
           <button key={id} onClick={() => setActiveTab(id)}
-            data-tour={id === 'ai' ? 'ai-tab' : id === 'editor' ? 'code-editor' : undefined}
+            data-tour={id === 'ai' ? 'ai-tab' : id === 'editor' ? 'code-editor' : id === 'tutorials' ? 'learn-tab' : undefined}
             className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2 ${
               activeTab === id
                 ? id === 'ai' ? 'border-purple-500 text-foreground' : 'border-primary text-foreground'
@@ -310,7 +313,7 @@ export default function RightPanel() {
               </button>
             </div>
             <div className="flex-1 min-h-0 overflow-hidden">
-              <MonacoEditor height="100%" language="python" theme="vs-dark" value={code}
+              <MonacoEditor height="100%" language={monacoLang} theme="vs-dark" value={code}
                 onChange={(val) => setCode(val ?? '')}
                 options={{
                   fontSize: 12, minimap: { enabled: false }, scrollBeyondLastLine: false,
@@ -325,9 +328,15 @@ export default function RightPanel() {
 
         {activeTab === 'properties' && <PropertiesTab />}
 
-        {activeTab === 'learn' && (
+        {activeTab === 'tutorials' && (
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
-            <LearnTab />
+            <TutorialsTab />
+          </div>
+        )}
+
+        {activeTab === 'docs' && (
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+            <DocsTab />
           </div>
         )}
 
