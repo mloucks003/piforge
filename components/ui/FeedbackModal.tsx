@@ -21,27 +21,30 @@ export default function FeedbackModal() {
   const [email, setEmail]     = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied]   = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
 
   if (!open) return null;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!message.trim()) return;
-
-    // Build mailto link
-    const subject = encodeURIComponent(`[PiForge Beta] ${TYPE_CONFIG[type].label}`);
-    const body = encodeURIComponent(
-      `Type: ${TYPE_CONFIG[type].label}\n\n${message}\n\n${email ? `Reply to: ${email}` : '(no email provided)'}\n\n---\nSent from PiForge Beta`
-    );
-    window.open(`mailto:feedback@piforge.dev?subject=${subject}&body=${body}`, '_blank');
-
-    // Also store locally
+    setSending(true);
+    setSendError('');
     try {
-      const existing = JSON.parse(localStorage.getItem('piforge-feedback') ?? '[]');
-      existing.push({ type, message, email, ts: Date.now() });
-      localStorage.setItem('piforge-feedback', JSON.stringify(existing));
-    } catch { /* ignore */ }
-
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, message, senderEmail: email || undefined, senderName: email || undefined }),
+      });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (!data.ok) { setSendError(data.error ?? 'Failed to send. Please try again.'); setSending(false); return; }
+    } catch {
+      setSendError('Network error. Please try again.');
+      setSending(false);
+      return;
+    }
+    setSending(false);
     setSubmitted(true);
   }
 
@@ -142,14 +145,15 @@ export default function FeedbackModal() {
               />
             </div>
 
+            {sendError && <p className="text-red-400 text-[11px]">{sendError}</p>}
             <div className="flex gap-2 pt-1">
               <button type="button" onClick={handleClose}
                 className="flex-1 rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-accent transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={!message.trim()}
+              <button type="submit" disabled={!message.trim() || sending}
                 className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                <Send className="h-3.5 w-3.5" /> Submit & Get Lifetime Code
+                <Send className="h-3.5 w-3.5" /> {sending ? 'Sending…' : 'Submit & Get Lifetime Code'}
               </button>
             </div>
           </form>

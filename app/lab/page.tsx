@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import AutoLoader from '@/components/layout/AutoLoader';
 import Sidebar from '@/components/layout/Sidebar';
@@ -13,8 +13,9 @@ import WelcomeModal from '@/components/tour/WelcomeModal';
 import ContextualPrompt from '@/components/tour/ContextualPrompt';
 import Toaster from '@/components/ui/Toaster';
 
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight } from 'lucide-react';
 import { useFeedbackStore } from '@/stores/feedbackStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const BETA_DISMISSED_KEY = 'piforge-beta-banner-dismissed';
 
@@ -44,10 +45,76 @@ function BetaBanner() {
   );
 }
 
+function SignUpWall() {
+  const { openModal } = useAuthStore();
+  return (
+    <div className="flex h-screen flex-col items-center justify-center bg-background text-foreground px-4">
+      <div className="w-full max-w-md space-y-8 text-center">
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/30">
+            <Cpu className="h-8 w-8 text-green-500" />
+          </div>
+          <h1 className="text-3xl font-black tracking-tight">PiForge</h1>
+          <p className="text-muted-foreground text-sm">Virtual Raspberry Pi &amp; Arduino Laboratory</p>
+        </div>
+
+        {/* Value props */}
+        <div className="grid grid-cols-2 gap-3 text-left">
+          {(
+            [
+              { Icon: Zap,      title: 'Run Real Python',    desc: 'Executes in your browser via Pyodide — no server, no latency' },
+              { Icon: Cable,    title: 'Wire Circuits',       desc: 'Drag-and-drop components, breadboards, and GPIO wires' },
+              { Icon: Code,     title: '11 Guided Tutorials', desc: 'Step-by-step from Blink LED to Smart Home Hub' },
+              { Icon: Sparkles, title: 'AI Assistant',        desc: 'Ask for help, fix errors, or generate full projects' },
+            ] as { Icon: React.ElementType; title: string; desc: string }[]
+          ).map(({ Icon, title, desc }) => (
+            <div key={title} className="rounded-xl border border-border bg-muted/30 p-3 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <Icon className="h-4 w-4 text-green-400 shrink-0" />
+                <span className="text-xs font-semibold text-foreground">{title}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-snug">{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTAs */}
+        <div className="space-y-3">
+          <button
+            onClick={() => openModal('signup')}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-sm font-bold text-white hover:bg-green-500 transition-colors"
+          >
+            Create Free Account <ArrowRight className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => openModal('signin')}
+            className="w-full rounded-xl border border-border py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            Already have an account? Sign In
+          </button>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground">
+          🚧 Public beta — everything is <strong className="text-foreground">free</strong> right now.{' '}
+          Use code <span className="font-mono text-green-400 font-bold">TESTDEV</span> after signing up for Pro access.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function LabPage() {
   const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);   // editor open by default
-  const [consoleOpen, setConsoleOpen] = useState(true); // console open by default
+  const [rightOpen, setRightOpen] = useState(true);
+  const [consoleOpen, setConsoleOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const user = useAuthStore((s) => s.user);
+
+  // Wait for client hydration before checking auth (authStore is localStorage-backed)
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;   // avoid SSR flash
+  if (!user) return <SignUpWall />;
 
   return (
     <div className="flex h-screen min-w-[1024px] flex-col">

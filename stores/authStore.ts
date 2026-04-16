@@ -98,14 +98,12 @@ export const useAuthStore = create<AuthState>()(
 
       applyPromo: (code) => {
         const plan = PROMO_CODES[code.trim()];
-        if (!plan) return { ok: false, error: 'Invalid promo code. Try "testdev" for full access.' };
+        if (!plan) return { ok: false, error: 'Invalid promo code.' };
         const { user, accounts } = get();
-        // If signed in, upgrade their stored account too
-        const updatedAccounts = accounts.map((a) =>
-          user && a.id === user.id ? { ...a, plan } : a
-        );
-        const updatedUser = user ? { ...user, plan } : { id: `guest_${Date.now()}`, email: 'guest@piforge.dev', name: 'Guest (Promo)', plan };
-        set({ user: updatedUser, accounts: updatedAccounts, modalOpen: false });
+        // Require a real account — no more guest access
+        if (!user) return { ok: false, error: 'Please create an account or sign in first, then apply your promo code.' };
+        const updatedAccounts = accounts.map((a) => a.id === user.id ? { ...a, plan } : a);
+        set({ user: { ...user, plan }, accounts: updatedAccounts, modalOpen: false });
         return { ok: true };
       },
 
