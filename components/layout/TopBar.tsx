@@ -165,25 +165,27 @@ export default function TopBar() {
   }, []);
 
   const handleExportPng = useCallback(() => {
+    setExportMenuOpen(false);
     const stage = useCanvasStore.getState().konvaStage;
     if (!stage) {
-      useProjectStore.getState().addConsoleEntry('system', 'Export failed — canvas not ready.');
+      toast.error('Screenshot failed — try clicking the canvas first, then export.');
       return;
     }
     try {
-      const dataUrl = stage.toDataURL({ mimeType: 'image/png', quality: 1 });
+      // pixelRatio: 2 gives a crisp 2× resolution image; avoid mimeType/quality which
+      // can silently fail in some browsers when the canvas is cross-origin tainted.
+      const dataUrl = stage.toDataURL({ pixelRatio: 2 });
       const link = document.createElement('a');
-      link.download = 'piforge-circuit.png';
+      link.download = `piforge-circuit-${Date.now()}.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      useProjectStore.getState().addConsoleEntry('system', 'PNG exported.');
+      toast.success('Screenshot saved!', { icon: '📸', duration: 2500 });
     } catch (err) {
       console.error('PNG export failed:', err);
-      useProjectStore.getState().addConsoleEntry('system', 'PNG export failed.');
+      toast.error('Screenshot failed — check browser permissions and try again.');
     }
-    setExportMenuOpen(false);
   }, []);
 
   const handleExportBuildGuide = useCallback(() => {

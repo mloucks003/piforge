@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap } from 'lucide-react';
+import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap, Play, Square } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAIStore } from '@/stores/aiStore';
 import { templates } from '@/lib/templates/index';
@@ -10,6 +10,7 @@ import { resolveCircuit } from '@/lib/simulation/circuit-resolver';
 import { getComponentDefinition } from '@/lib/components';
 import AIPanel from '@/components/ai/AIPanel';
 import { TutorialsTab, DocsTab } from '@/components/tutorials/LearnTab';
+import { getSimulationEngine, getSimulationGpio } from '@/components/layout/TopBar';
 
 // Configure Monaco to load workers from CDN — avoids Next.js/Turbopack worker issues
 const MonacoEditor = dynamic(
@@ -263,6 +264,37 @@ export default function RightPanel() {
     }, 50);
   }, [setActiveMode, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError]);
 
+  const simulationState = useProjectStore((s) => s.simulationState);
+  const isRunning = simulationState === 'running';
+
+  const handleRun = useCallback(() => {
+    const currentCode = useProjectStore.getState().code;
+    if (!currentCode.trim()) {
+      useProjectStore.getState().addConsoleEntry('system', 'No code to run. Write some code first.');
+      return;
+    }
+    // Get or create the engine singleton (TopBar owns it but exposes it globally)
+    let engine = getSimulationEngine();
+    if (!engine) {
+      // Engine not yet created — import lazily to avoid circular deps
+      const { SimulationEngine } = require('@/lib/simulation/engine') as typeof import('@/lib/simulation/engine');
+      const { GPIOMock } = require('@/lib/simulation/gpio-mock') as typeof import('@/lib/simulation/gpio-mock');
+      const gpio = getSimulationGpio() ?? new GPIOMock();
+      engine = new SimulationEngine(gpio, {
+        onStdout: (t) => useProjectStore.getState().addConsoleEntry('stdout', t),
+        onStderr: (t) => useProjectStore.getState().addConsoleEntry('stderr', t),
+        onStateChange: (s) => useProjectStore.getState().setSimulationState(s),
+        onPinChange: () => {},
+      });
+    }
+    useProjectStore.getState().clearConsole();
+    engine.start(currentCode);
+  }, []);
+
+  const handleStop = useCallback(() => {
+    getSimulationEngine()?.stop();
+  }, []);
+
   const TABS = [
     ['editor',     'Editor',    Code],
     ['properties', 'Circuit',   Cpu],
@@ -302,6 +334,18 @@ export default function RightPanel() {
                 <option value="" disabled>Load template…</option>
                 {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
+              {/* Run / Stop */}
+              {isRunning ? (
+                <button onClick={handleStop} title="Stop simulation"
+                  className="flex items-center gap-1 rounded bg-red-600/15 border border-red-600/30 px-2 py-1 text-[10px] font-medium text-red-400 hover:bg-red-600/25 transition-colors">
+                  <Square className="h-3 w-3" /> Stop
+                </button>
+              ) : (
+                <button onClick={handleRun} title="Run code (▶)"
+                  className="flex items-center gap-1 rounded bg-green-600/15 border border-green-600/30 px-2 py-1 text-[10px] font-medium text-green-400 hover:bg-green-600/25 transition-colors">
+                  <Play className="h-3 w-3" /> Run
+                </button>
+              )}
               {/* AI quick actions */}
               <button onClick={() => triggerAI('analyze')} title="AI: Analyze Code"
                 className="flex items-center gap-1 rounded bg-blue-600/15 border border-blue-600/30 px-2 py-1 text-[10px] font-medium text-blue-400 hover:bg-blue-600/25 transition-colors">

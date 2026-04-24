@@ -17,9 +17,8 @@ function setupSmartOfficeCircuit() {
 
   // Place components to the right of the board
   const pirId    = addComponent(getComponentDefinition('pir-sensor')!, { x: bp.x + 300, y: bp.y });
-  const btnId    = addComponent(getComponentDefinition('button')!,     { x: bp.x + 300, y: bp.y + 60 });
-  const ledGrId  = addComponent(getComponentDefinition('led-green')!,  { x: bp.x + 300, y: bp.y + 120 });
-  const ledBlId  = addComponent(getComponentDefinition('led-blue')!,   { x: bp.x + 300, y: bp.y + 180 });
+  const ledGrId  = addComponent(getComponentDefinition('led-green')!,  { x: bp.x + 300, y: bp.y + 80 });
+  const ledBlId  = addComponent(getComponentDefinition('led-blue')!,   { x: bp.x + 300, y: bp.y + 160 });
   const dht22Id  = addComponent(getComponentDefinition('dht22')!,      { x: bp.x + 300, y: bp.y + 240 });
   const relayId  = addComponent(getComponentDefinition('relay')!,      { x: bp.x + 300, y: bp.y + 310 });
 
@@ -32,10 +31,6 @@ function setupSmartOfficeCircuit() {
   w('yellow', 7,  pirId,   'out');
   w('red',    1,  pirId,   'vcc');
   w('black',  6,  pirId,   'gnd');
-
-  // Button (manual override) — pin1→GPIO2(3), pin2→GND(9)
-  w('orange', 3,  btnId,   'pin1');
-  w('black',  9,  btnId,   'pin2');
 
   // Green LED (main office light) — anode→GPIO17(11), cathode→GND(14)
   w('green',  11, ledGrId, 'anode');
@@ -67,7 +62,7 @@ export const smartOfficeTutorial: TutorialDefinition = {
     {
       id: 'welcome',
       title: '🏢 Circuit Auto-Built!',
-      content: 'The Smart Office circuit is wired and ready:\n\n• 🔴 PIR sensor → GPIO4 (occupancy detection)\n• 🔘 Button → GPIO2 (manual light override)\n• 🟢 Green LED → GPIO17 (main office light)\n• 🔵 Blue LED → GPIO18 (status indicator)\n• 🌡️ DHT22 → GPIO22 (climate monitoring)\n• ⚡ Relay → GPIO27 (HVAC control)\n\nAll power and ground connections are in place.',
+      content: 'The Smart Office circuit is wired and ready:\n\n• 🔴 PIR sensor → GPIO4 (occupancy detection)\n• 🟢 Green LED → GPIO17 (main office light)\n• 🔵 Blue LED → GPIO18 (status indicator)\n• 🌡️ DHT22 → GPIO22 (climate monitoring)\n• ⚡ Relay → GPIO27 (HVAC control)\n\nAll power and ground connections are in place.',
       completionCondition: { type: 'manual' },
       hints: ['Scroll and zoom the canvas to explore all six components.'],
       tourTarget: 'canvas',
@@ -83,9 +78,9 @@ export const smartOfficeTutorial: TutorialDefinition = {
     {
       id: 'understand-logic',
       title: 'How the Automation Works',
-      content: 'The office controller has two modes:\n\n**AUTO mode** — PIR detects presence → lights on. No motion for 5 minutes → lights off. Saves energy automatically.\n\n**MANUAL mode** — Press the button to toggle lights regardless of occupancy. Useful for meetings, cleaners, or presentations.\n\nThe DHT22 triggers the HVAC relay when temperature rises above threshold.',
+      content: 'The office controller works automatically:\n\n**Occupancy** — PIR detects motion → green LED (lights) on. No motion for 5 minutes → lights off. Saves energy automatically.\n\n**Status** — Blue LED indicates the system is active and monitoring.\n\n**Climate** — DHT22 reads temperature & humidity every 20 cycles. When temp rises above threshold it triggers the HVAC relay.\n\nWatch the console output to see each event as it fires.',
       completionCondition: { type: 'manual' },
-      hints: ['In the simulation the button state is toggled via the Circuit Inspector or by clicking the component on the canvas.'],
+      hints: ['The simulation uses random sensor values so you\'ll see motion and climate events fire automatically.'],
       tourTarget: 'canvas',
     },
     {
