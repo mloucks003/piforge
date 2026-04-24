@@ -1,19 +1,66 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import {
   Sparkles, Send, Trash2, Bug, Wrench,
-  MessageSquare, Loader2, AlertCircle, Wand2,
+  MessageSquare, Loader2, AlertCircle, Wand2, Zap,
 } from 'lucide-react';
 import { useAIStore, type AIMode } from '@/stores/aiStore';
+import { useProjectStore } from '@/stores/projectStore';
+import { getComponentDefinition } from '@/lib/components';
+import { toast } from '@/stores/toastStore';
 import sendMessage from '@/lib/ai/sendMessage';
+
+// ── Build plan types ──────────────────────────────────────────────────────────
+interface BuildComponent { ref: string; definitionId: string; }
+interface BuildWire { compRef: string; pinId: string; boardPin: number; color: string; }
+interface BuildPlan { components: BuildComponent[]; wires: BuildWire[]; code?: string; }
+
+function extractBuildPlan(content: string): BuildPlan | null {
+  const match = content.match(/<piforge-build>([\s\S]*?)<\/piforge-build>/);
+  if (!match) return null;
+  try { return JSON.parse(match[1].trim()) as BuildPlan; } catch { return null; }
+}
+
+function stripBuildBlock(content: string): string {
+  return content.replace(/<piforge-build>[\s\S]*?<\/piforge-build>/g, '').trim();
+}
+
+function executeBuildPlan(plan: BuildPlan): string {
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const { addComponent, addWire, boardPosition: bp, boardModel, setCode } = useProjectStore.getState();
+  // Clear canvas first
+  useProjectStore.setState({ components: {}, wires: {}, breadboards: {}, past: [], future: [] });
+  // Place components spaced 80px apart vertically
+  const idMap: Record<string, string> = {};
+  plan.components.forEach((comp, i) => {
+    const def = getComponentDefinition(comp.definitionId);
+    if (!def) return;
+    const realId = addComponent(def, { x: bp.x + 320, y: bp.y + i * 80 });
+    idMap[comp.ref] = realId;
+  });
+  // Add wires
+  for (const wire of plan.wires) {
+    const compId = idMap[wire.compRef];
+    if (!compId) continue;
+    addWire({
+      id: uid(), color: wire.color as never, path: [], validated: true, warnings: [],
+      startPinRef: { type: 'board', boardId: boardModel, pinNumber: wire.boardPin },
+      endPinRef:   { type: 'component', componentId: compId, pinId: wire.pinId },
+    });
+  }
+  // Load code
+  if (plan.code) setCode(plan.code);
+  return `Built ${plan.components.length} component(s) with ${plan.wires.length} wire(s).`;
+}
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
 function MessageBubble({ role, content }: { role: string; content: string }) {
   const isUser = role === 'user';
-  // Minimal markdown: code blocks, bold
-  const formatted = content
+  // Strip build block before rendering — the button handles execution
+  const display = stripBuildBlock(content);
+  const formatted = display
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-muted/60 rounded-lg p-3 text-[11px] font-mono overflow-x-auto my-2 text-foreground whitespace-pre-wrap">$2</pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted/60 rounded px-1 text-[11px] font-mono text-green-400">$1</code>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -45,11 +92,36 @@ export default function AIPanel() {
     setStreaming, setError, clearMessages, checkServerKey } = useAIStore();
 
   const [input, setInput] = useState('');
+  const [pendingBuild, setPendingBuild] = useState<BuildPlan | null>(null);
+  const prevStreaming = useRef(false);
   const bottomRef    = useRef<HTMLDivElement>(null);
   const textareaRef  = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { checkServerKey(); }, [checkServerKey]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length, streamingContent]);
+
+  // Detect when streaming just finished — check the last AI message for a build plan
+  useEffect(() => {
+    if (prevStreaming.current && !streaming) {
+      const last = messages[messages.length - 1];
+      if (last?.role === 'assistant') {
+        const plan = extractBuildPlan(last.content);
+        if (plan) setPendingBuild(plan);
+      }
+    }
+    prevStreaming.current = streaming;
+  }, [streaming, messages]);
+
+  const handleBuild = useCallback(() => {
+    if (!pendingBuild) return;
+    try {
+      const summary = executeBuildPlan(pendingBuild);
+      toast.success(`✨ Circuit built! ${summary} Code loaded in Editor.`, { duration: 4000 });
+      setPendingBuild(null);
+    } catch (e) {
+      toast.error('Build failed — ' + (e instanceof Error ? e.message : 'unknown error'));
+    }
+  }, [pendingBuild]);
 
   const send = async (overrideContent?: string) => {
     if (streaming) return;
@@ -152,6 +224,20 @@ export default function AIPanel() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Build on Canvas button — appears when AI returns a build plan */}
+      {pendingBuild && !streaming && (
+        <div className="shrink-0 px-3 pb-2">
+          <button onClick={handleBuild}
+            className="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold bg-green-600 hover:bg-green-500 text-white transition-colors shadow-lg shadow-green-900/30">
+            <Zap className="h-3.5 w-3.5" />
+            ✨ Build Circuit on Canvas
+          </button>
+          <p className="text-[9px] text-muted-foreground text-center mt-1">
+            Clears canvas and places {pendingBuild.components.length} component(s) + wires + code
+          </p>
+        </div>
+      )}
+
       {/* Input area */}
       <div className="shrink-0 border-t border-border p-3 space-y-2">
         {(activeMode === 'analyze' || activeMode === 'fix' || activeMode === 'generate') && (
@@ -172,7 +258,7 @@ export default function AIPanel() {
           </button>
         </div>
         <p className="text-[9px] text-muted-foreground text-center">
-          Your code, wiring &amp; console are sent as context · Powered by GPT-4o mini
+          Your code, wiring &amp; console are sent as context · Powered by GPT-4o
         </p>
       </div>
     </div>

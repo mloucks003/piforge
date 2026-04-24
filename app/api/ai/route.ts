@@ -32,6 +32,60 @@ function buildSystemPrompt(body: AIRequestBody): string {
     contextParts.push(`## Console Output / Errors\n\`\`\`\n${body.consoleErrors}\n\`\`\``);
   }
 
+  const buildCapabilityPrompt = `
+## 🔨 Canvas Build Capability
+You can directly build circuits on the PiForge canvas. When the user asks you to "build", "create", "make", or "wire up" a project, ALWAYS include a <piforge-build> JSON block at the very end of your response (after all explanation).
+
+### Format:
+<piforge-build>
+{
+  "components": [
+    {"ref": "led1", "definitionId": "led-green"},
+    {"ref": "btn1", "definitionId": "button"}
+  ],
+  "wires": [
+    {"compRef": "led1", "pinId": "anode",   "boardPin": 11, "color": "red"},
+    {"compRef": "led1", "pinId": "cathode", "boardPin": 14, "color": "black"},
+    {"compRef": "btn1", "pinId": "pin1",    "boardPin": 12, "color": "yellow"},
+    {"compRef": "btn1", "pinId": "pin2",    "boardPin": 9,  "color": "black"}
+  ],
+  "code": "from gpiozero import LED, Button\n..."
+}
+</piforge-build>
+
+### Available definitionIds:
+led-green, led-red, led-blue, button, buzzer, servo, relay, dht22, pir-sensor,
+rgb-led, dc-motor, hc-sr04, lcd-16x2, oled-ssd1306, potentiometer, resistor,
+neopixel-8, seven-segment, stepper-uln, joystick, capacitor
+
+### Pin IDs per component:
+- led-green / led-red / led-blue: anode (signal/+), cathode (GND/-)
+- button: pin1 (signal to GPIO), pin2 (GND)
+- buzzer: positive (+), negative (-)
+- servo: vcc (5V), gnd, signal (PWM)
+- relay / pir-sensor / dht22: signal/out, vcc, gnd
+- rgb-led: red, green, blue, cathode
+- hc-sr04: trig, echo, vcc, gnd
+- dc-motor: in1, in2, vcc, gnd
+
+### boardPin = PHYSICAL pin number on the 40-pin header (NOT BCM GPIO number):
+Power/GND: 1=3V3, 2=5V, 4=5V, 6=GND, 9=GND, 14=GND, 17=3V3, 20=GND, 25=GND, 30=GND, 34=GND, 39=GND
+GPIO pins: 3=GPIO2, 5=GPIO3, 7=GPIO4, 8=GPIO14, 10=GPIO15, 11=GPIO17, 12=GPIO18,
+           13=GPIO27, 15=GPIO22, 16=GPIO23, 18=GPIO24, 19=GPIO10, 21=GPIO9, 22=GPIO25,
+           23=GPIO11, 24=GPIO8, 26=GPIO7, 29=GPIO5, 31=GPIO6, 32=GPIO12, 33=GPIO13,
+           35=GPIO19, 36=GPIO16, 37=GPIO26, 38=GPIO20, 40=GPIO21
+
+### Rules:
+- ALWAYS include the <piforge-build> block when building/creating anything
+- Use physical pin numbers (boardPin), NOT BCM numbers
+- LED anode → GPIO pin, cathode → GND pin
+- Button pin1 → GPIO pin, pin2 → GND
+- Buzzer positive → GPIO pin, negative → GND
+- Servo: vcc → 5V pin (2 or 4), gnd → GND, signal → GPIO PWM pin
+- The "ref" values are local names you choose; the executor maps them to real IDs
+- Include complete, working Python code in the "code" field using gpiozero
+`;
+
   const modeInstructions: Record<string, string> = {
     analyze: `You are performing a CODE ANALYSIS. Review the code for:
 1. Bugs or logic errors
@@ -44,16 +98,12 @@ Format your response with clear sections: ✅ What's correct, ⚠️ Issues foun
 2. The corrected Python code (complete, ready to paste)
 3. An explanation of each change made
 Format: brief diagnosis → corrected code block → explanation.`,
-    generate: `You are a CODE GENERATOR for Raspberry Pi projects. The user will describe what they want to build.
-You must provide:
-1. **Project Overview** — brief description of what you will generate
-2. **Components Needed** — exact list of components and quantities
-3. **Wiring Guide** — step-by-step wiring instructions (format: ComponentPin → Pi GPIO BCM number)
-4. **Complete Python Code** — fully working, commented Python using gpiozero or RPi.GPIO, ready to paste
-5. **How to Run** — 1-2 sentences on running the project
-
-Keep code practical, well-commented, and use gpiozero where possible.`,
-    chat: `You are a helpful assistant. Answer concisely and practically. When showing code, use Python code blocks.`,
+    generate: `You are a PROJECT BUILDER for Raspberry Pi. The user describes what they want — you build it directly on the canvas.
+Provide a brief explanation of what you're building, then ALWAYS end with a <piforge-build> JSON block.
+${buildCapabilityPrompt}`,
+    chat: `You are a helpful assistant. Answer concisely and practically. When showing code, use Python code blocks.
+If the user asks you to build, create, make, or wire anything, ALWAYS include a <piforge-build> block.
+${buildCapabilityPrompt}`,
   };
 
   const basePrompt = `You are PiForge AI, an expert embedded systems and Raspberry Pi assistant built into the PiForge virtual lab.
