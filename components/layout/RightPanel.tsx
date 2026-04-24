@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap, Play, Square } from 'lucide-react';
+import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap, Play, Square, Network } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAIStore } from '@/stores/aiStore';
 import { templates } from '@/lib/templates/index';
@@ -11,6 +11,7 @@ import { getComponentDefinition } from '@/lib/components';
 import AIPanel from '@/components/ai/AIPanel';
 import { TutorialsTab, DocsTab } from '@/components/tutorials/LearnTab';
 import { getSimulationEngine, getSimulationGpio } from '@/components/layout/TopBar';
+import NetworkLab from '@/components/network/NetworkLab';
 
 // Configure Monaco to load workers from CDN — avoids Next.js/Turbopack worker issues
 const MonacoEditor = dynamic(
@@ -31,7 +32,7 @@ const MonacoEditor = dynamic(
   }
 );
 
-type Tab = 'editor' | 'properties' | 'tutorials' | 'docs' | 'ai';
+type Tab = 'editor' | 'properties' | 'tutorials' | 'docs' | 'ai' | 'network';
 
 function PropertiesTab() {
   const components      = useProjectStore((s) => s.components);
@@ -301,6 +302,7 @@ export default function RightPanel() {
     ['tutorials',  'Learn',     GraduationCap],
     ['docs',       'Docs',      BookOpen],
     ['ai',         'AI',        Sparkles],
+    ['network',    'Network',   Network],
   ] as const;
 
   return (
@@ -312,12 +314,13 @@ export default function RightPanel() {
             data-tour={id === 'ai' ? 'ai-tab' : id === 'editor' ? 'code-editor' : id === 'tutorials' ? 'learn-tab' : undefined}
             className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2 ${
               activeTab === id
-                ? id === 'ai' ? 'border-purple-500 text-foreground' : 'border-primary text-foreground'
+                ? id === 'ai' ? 'border-purple-500 text-foreground' : id === 'network' ? 'border-blue-500 text-foreground' : 'border-primary text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}>
-            <Icon className={`h-3.5 w-3.5 ${activeTab === id && id === 'ai' ? 'text-purple-400' : ''}`} />
+            <Icon className={`h-3.5 w-3.5 ${activeTab === id && id === 'ai' ? 'text-purple-400' : activeTab === id && id === 'network' ? 'text-blue-400' : ''}`} />
             {label}
             {id === 'ai' && <span className="ml-0.5 text-[9px] px-1 rounded-full bg-purple-500/20 text-purple-400 font-semibold">AI</span>}
+            {id === 'network' && <span className="ml-0.5 text-[9px] px-1 rounded-full bg-blue-500/20 text-blue-400 font-semibold">NEW</span>}
           </button>
         ))}
       </div>
@@ -387,6 +390,12 @@ export default function RightPanel() {
         {activeTab === 'ai' && (
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
             <AIPanel />
+          </div>
+        )}
+
+        {activeTab === 'network' && (
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+            <NetworkLab />
           </div>
         )}
       </div>
