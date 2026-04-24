@@ -108,10 +108,12 @@ export default function SimHub() {
     if (scenario.isFreeBuild) {
       useProjectStore.setState({ components: {}, wires: {}, breadboards: {}, past: [], future: [] });
       useCanvasStore.getState().setActiveEnvironment(null);
+      useCanvasStore.getState().setActiveScene(null);
       switchTab('editor');
       return;
     }
     if (scenario.isNetworkLab) {
+      useCanvasStore.getState().setActiveScene(null);
       switchTab('network');
       return;
     }
@@ -120,6 +122,14 @@ export default function SimHub() {
       if (!tutorial) return;
       tutorial.onStart?.();
       useTutorialStore.getState().start(tutorial);
+      // Set the live scene view
+      const sceneMap: Record<string, 'farm' | 'home' | 'office' | 'robot'> = {
+        'smart-home-tutorial':     'home',
+        'smart-office-tutorial':   'office',
+        'obstacle-robot-tutorial': 'robot',
+        'smart-farm-tutorial':     'farm',
+      };
+      useCanvasStore.getState().setActiveScene(sceneMap[scenario.tutorialId] ?? null);
       switchTab('tutorials');
     }
   }

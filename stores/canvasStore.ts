@@ -23,6 +23,8 @@ export interface CanvasState {
   konvaStage: Konva.Stage | null;
   /** Active smart-home environment floor plan, or null */
   activeEnvironment: 'home' | 'office' | null;
+  /** Active live scene panel — shows physical environment reacting to simulation */
+  activeScene: 'farm' | 'home' | 'office' | 'robot' | null;
 
   // Actions
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
@@ -35,6 +37,7 @@ export interface CanvasState {
   setWiringMode: (on: boolean) => void;
   setKonvaStage: (stage: Konva.Stage | null) => void;
   setActiveEnvironment: (env: CanvasState['activeEnvironment']) => void;
+  setActiveScene: (scene: CanvasState['activeScene']) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -47,6 +50,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   wiringMode: false,
   konvaStage: null,
   activeEnvironment: null,
+  activeScene: null,
 
   setViewport: (partial) =>
     set((s) => ({ viewport: { ...s.viewport, ...partial } })),
@@ -65,4 +69,5 @@ export const useCanvasStore = create<CanvasState>((set) => ({
 
   setKonvaStage: (stage) => set({ konvaStage: stage }),
   setActiveEnvironment: (env) => set({ activeEnvironment: env }),
+  setActiveScene: (scene) => set({ activeScene: scene }),
 }));

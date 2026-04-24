@@ -13,6 +13,7 @@ import WelcomeModal from '@/components/tour/WelcomeModal';
 import ContextualPrompt from '@/components/tour/ContextualPrompt';
 import Toaster from '@/components/ui/Toaster';
 import SimHub from '@/components/sim/SimHub';
+import SceneView from '@/components/sim/SceneView';
 
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight } from 'lucide-react';
 import { useFeedbackStore } from '@/stores/feedbackStore';
@@ -146,6 +147,8 @@ export default function LabPage() {
         {/* Center */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <CanvasArea />
+          {/* Live scene view — shows physical environment reacting to simulation */}
+          <SceneView />
           {/* Console */}
           {consoleOpen ? (
             <div className="relative">
