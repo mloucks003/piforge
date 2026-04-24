@@ -47,15 +47,17 @@ export const useAIStore = create<AIState>()(
       error: null,
 
       checkServerKey: async () => {
-        // Only check once per session
-        if (get().serverHasKey !== null) return;
+        // Always re-check (clears any stale persisted state)
         try {
-          const res = await fetch('/api/ai/status');
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 5000);
+          const res = await fetch('/api/ai/status', { signal: controller.signal });
+          clearTimeout(timeout);
           const data = await res.json() as { hasServerKey: boolean };
           set({ serverHasKey: data.hasServerKey });
         } catch {
-          // If status check fails, assume server key is present and let the API call fail gracefully
-          set({ serverHasKey: true });
+          // Timeout or network failure — assume no key so user gets clear UI
+          set({ serverHasKey: false });
         }
       },
       setPanelOpen: (open) => set({ panelOpen: open }),

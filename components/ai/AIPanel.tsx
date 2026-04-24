@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import {
   Sparkles, Send, Trash2, Bug, Wrench,
-  MessageSquare, Loader2, AlertCircle, Wand2, Zap,
+  MessageSquare, Loader2, AlertCircle, Wand2, Zap, Key, Eye, EyeOff, CheckCircle2,
 } from 'lucide-react';
 import { useAIStore, type AIMode } from '@/stores/aiStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -93,10 +93,15 @@ export default function AIPanel() {
 
   const [input, setInput] = useState('');
   const [pendingBuild, setPendingBuild] = useState<BuildPlan | null>(null);
+  const [userKey, setUserKey] = useState('');
+  const [savedKey, setSavedKey] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem('piforge-user-api-key') ?? '') : '');
+  const [showKey, setShowKey] = useState(false);
+  const [showKeyInput, setShowKeyInput] = useState(false);
   const prevStreaming = useRef(false);
   const bottomRef    = useRef<HTMLDivElement>(null);
   const textareaRef  = useRef<HTMLTextAreaElement>(null);
 
+  // Always re-check on mount so stale persisted state is cleared
   useEffect(() => { checkServerKey(); }, [checkServerKey]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length, streamingContent]);
 
@@ -132,15 +137,29 @@ export default function AIPanel() {
       else return;
     }
     setInput('');
-    // Pass empty string — server uses its own OPENAI_API_KEY env var
-    await sendMessage(content, activeMode, '', addMessage, appendStreamChunk, finalizeStream, setStreaming, setError);
+    // Pass user's saved key if server has no key configured
+    await sendMessage(content, activeMode, effectiveKey, addMessage, appendStreamChunk, finalizeStream, setStreaming, setError);
   };
+
+  const saveUserKey = useCallback(() => {
+    const k = userKey.trim();
+    localStorage.setItem('piforge-user-api-key', k);
+    setSavedKey(k);
+    setShowKeyInput(false);
+    setUserKey('');
+  }, [userKey]);
+
+  const clearUserKey = useCallback(() => {
+    localStorage.removeItem('piforge-user-api-key');
+    setSavedKey('');
+  }, []);
 
   const meta = MODE_META[activeMode];
   const Icon = meta.icon;
 
-  // While we haven't confirmed the server key yet, show a subtle connecting state
-  const isReady = serverHasKey !== false;
+  // Ready when server has key OR user has provided their own
+  const effectiveKey = savedKey || '';
+  const isReady = serverHasKey === true || Boolean(effectiveKey);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -150,17 +169,56 @@ export default function AIPanel() {
         <span className="text-xs font-semibold text-foreground flex-1">PiForge AI</span>
         {serverHasKey === null ? (
           <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" /> Connecting…
+            <Loader2 className="h-3 w-3 animate-spin" /> Checking…
           </span>
-        ) : (
+        ) : isReady ? (
           <span className="flex items-center gap-1 text-[9px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Ready
           </span>
+        ) : (
+          <button onClick={() => setShowKeyInput(v => !v)}
+            className="flex items-center gap-1 text-[9px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5 hover:bg-amber-500/20 transition-colors">
+            <Key className="h-2.5 w-2.5" /> Add Key
+          </button>
         )}
         <button onClick={clearMessages} className="p-1 rounded hover:bg-accent transition-colors" title="Clear conversation">
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </div>
+
+      {/* API Key input — shown when server has no key */}
+      {showKeyInput && (
+        <div className="shrink-0 px-3 py-3 bg-amber-500/5 border-b border-amber-500/20 space-y-2">
+          <p className="text-[10px] font-semibold text-amber-400 flex items-center gap-1">
+            <Key className="h-3 w-3" /> OpenAI API Key Required
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            Get a key at <span className="text-amber-400">platform.openai.com</span>. It&apos;s stored only in your browser.
+          </p>
+          {savedKey ? (
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span className="text-[10px] text-green-400 flex-1">Key saved ✓</span>
+              <button onClick={clearUserKey} className="text-[9px] text-red-400 hover:text-red-300 underline">Remove</button>
+            </div>
+          ) : (
+            <div className="flex gap-1">
+              <div className="relative flex-1">
+                <input type={showKey ? 'text' : 'password'} value={userKey} onChange={e => setUserKey(e.target.value)}
+                  placeholder="sk-proj-…" onKeyDown={e => e.key === 'Enter' && saveUserKey()}
+                  className="w-full rounded-lg border border-border bg-muted/40 px-2 py-1.5 text-[11px] pr-7 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+                <button onClick={() => setShowKey(v => !v)} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                </button>
+              </div>
+              <button onClick={saveUserKey} disabled={!userKey.trim().startsWith('sk-')}
+                className="px-2 py-1.5 rounded-lg bg-amber-500 text-black text-[10px] font-bold hover:bg-amber-400 disabled:opacity-40 transition-colors">
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Mode tabs */}
       <div className="flex shrink-0 border-b border-border">
@@ -250,7 +308,7 @@ export default function AIPanel() {
         <div className="flex gap-2 items-end">
           <textarea ref={textareaRef} value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder={isReady ? meta.placeholder : 'Connecting to AI…'} rows={2} disabled={streaming || !isReady}
+            placeholder={serverHasKey === null ? 'Checking connection…' : !isReady ? 'Click "Add Key" above to get started…' : meta.placeholder} rows={2} disabled={streaming || !isReady}
             className="flex-1 resize-none rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50 placeholder:text-muted-foreground" />
           <button onClick={() => send()} disabled={!input.trim() || streaming || !isReady}
             className="p-2 rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors disabled:opacity-40">

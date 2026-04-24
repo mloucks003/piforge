@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap, Play, Square, Network } from 'lucide-react';
+import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap, Play, Square, Network, FlaskConical } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAIStore } from '@/stores/aiStore';
 import { templates } from '@/lib/templates/index';
@@ -12,6 +12,7 @@ import AIPanel from '@/components/ai/AIPanel';
 import { TutorialsTab, DocsTab } from '@/components/tutorials/LearnTab';
 import { getSimulationEngine, getSimulationGpio } from '@/components/layout/TopBar';
 import NetworkLab from '@/components/network/NetworkLab';
+import LabPanel from '@/components/labs/LabPanel';
 
 // Configure Monaco to load workers from CDN — avoids Next.js/Turbopack worker issues
 const MonacoEditor = dynamic(
@@ -32,7 +33,7 @@ const MonacoEditor = dynamic(
   }
 );
 
-type Tab = 'editor' | 'properties' | 'tutorials' | 'docs' | 'ai' | 'network';
+type Tab = 'editor' | 'properties' | 'tutorials' | 'docs' | 'ai' | 'network' | 'labs';
 
 function PropertiesTab() {
   const components      = useProjectStore((s) => s.components);
@@ -312,6 +313,7 @@ export default function RightPanel() {
     ['tutorials',  'Learn',     GraduationCap],
     ['docs',       'Docs',      BookOpen],
     ['ai',         'AI',        Sparkles],
+    ['labs',       'Labs',      FlaskConical],
     ['network',    'Network',   Network],
   ] as const;
 
@@ -330,7 +332,7 @@ export default function RightPanel() {
             <Icon className={`h-3.5 w-3.5 ${activeTab === id && id === 'ai' ? 'text-purple-400' : activeTab === id && id === 'network' ? 'text-blue-400' : ''}`} />
             {label}
             {id === 'ai' && <span className="ml-0.5 text-[9px] px-1 rounded-full bg-purple-500/20 text-purple-400 font-semibold">AI</span>}
-            {id === 'network' && <span className="ml-0.5 text-[9px] px-1 rounded-full bg-blue-500/20 text-blue-400 font-semibold">NEW</span>}
+            {id === 'labs' && <span className="ml-0.5 text-[9px] px-1 rounded-full bg-blue-500/20 text-blue-400 font-semibold">LAB</span>}
           </button>
         ))}
       </div>
@@ -400,6 +402,12 @@ export default function RightPanel() {
         {activeTab === 'ai' && (
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
             <AIPanel />
+          </div>
+        )}
+
+        {activeTab === 'labs' && (
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+            <LabPanel />
           </div>
         )}
 
