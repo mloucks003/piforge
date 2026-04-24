@@ -104,10 +104,10 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: openaiMessages,
         stream: true,
-        max_tokens: 2048,
+        max_tokens: 4096,
         temperature: 0.3,
       }),
     });
