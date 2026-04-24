@@ -9,6 +9,7 @@ import { morseCodeTutorial }          from './definitions/morse-code';
 import { touchscreenDashboardTutorial } from './definitions/touchscreen-dashboard';
 import { smartHomeTutorial }          from './definitions/smart-home';
 import { smartOfficeTutorial }        from './definitions/smart-office';
+import { obstacleRobotTutorial }      from './definitions/obstacle-robot';
 import type { TutorialDefinition } from './types';
 
 export const tutorials: TutorialDefinition[] = [
@@ -23,6 +24,7 @@ export const tutorials: TutorialDefinition[] = [
   touchscreenDashboardTutorial,
   smartHomeTutorial,
   smartOfficeTutorial,
+  obstacleRobotTutorial,
 ];
 export function getTutorial(id: string) { return tutorials.find(t => t.id === id); }
 export type { TutorialDefinition, TutorialStep, CompletionCondition } from './types';

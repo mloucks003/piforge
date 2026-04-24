@@ -63,14 +63,20 @@ neopixel-8, seven-segment, stepper-uln, joystick, capacitor
 - button: pin1 (signal to GPIO), pin2 (GND)
 - buzzer: positive (+), negative (-)
 - servo: vcc (5V), gnd, signal (PWM)
-- relay / pir-sensor / dht22: signal/out, vcc, gnd
+- relay: signal, vcc, gnd
+- pir-sensor: out, vcc, gnd
+- dht22: data, vcc, gnd
 - rgb-led: red, green, blue, cathode
 - hc-sr04: trig, echo, vcc, gnd
 - dc-motor: in1, in2, vcc, gnd
+- potentiometer: vcc, gnd, wiper
+- lcd-16x2: sda, scl, vcc, gnd
+- oled-ssd1306: sda, scl, vcc, gnd
 
 ### boardPin = PHYSICAL pin number on the 40-pin header (NOT BCM GPIO number):
 Power/GND: 1=3V3, 2=5V, 4=5V, 6=GND, 9=GND, 14=GND, 17=3V3, 20=GND, 25=GND, 30=GND, 34=GND, 39=GND
-GPIO pins: 3=GPIO2, 5=GPIO3, 7=GPIO4, 8=GPIO14, 10=GPIO15, 11=GPIO17, 12=GPIO18,
+I2C: 3=SDA(GPIO2), 5=SCL(GPIO3)
+GPIO pins: 7=GPIO4, 8=GPIO14, 10=GPIO15, 11=GPIO17, 12=GPIO18,
            13=GPIO27, 15=GPIO22, 16=GPIO23, 18=GPIO24, 19=GPIO10, 21=GPIO9, 22=GPIO25,
            23=GPIO11, 24=GPIO8, 26=GPIO7, 29=GPIO5, 31=GPIO6, 32=GPIO12, 33=GPIO13,
            35=GPIO19, 36=GPIO16, 37=GPIO26, 38=GPIO20, 40=GPIO21
@@ -78,12 +84,35 @@ GPIO pins: 3=GPIO2, 5=GPIO3, 7=GPIO4, 8=GPIO14, 10=GPIO15, 11=GPIO17, 12=GPIO18,
 ### Rules:
 - ALWAYS include the <piforge-build> block when building/creating anything
 - Use physical pin numbers (boardPin), NOT BCM numbers
-- LED anode → GPIO pin, cathode → GND pin
+- LED anode → GPIO pin, cathode → GND pin (add resistor for beginners)
 - Button pin1 → GPIO pin, pin2 → GND
 - Buzzer positive → GPIO pin, negative → GND
-- Servo: vcc → 5V pin (2 or 4), gnd → GND, signal → GPIO PWM pin
+- Servo: vcc → 5V pin (2 or 4), gnd → GND, signal → GPIO PWM pin (12 or 32 or 33)
+- Relay/PIR/DHT22: vcc → 5V or 3V3, gnd → GND, signal/out/data → GPIO
+- HC-SR04: vcc → 5V(2), gnd → GND(6), trig → GPIO(16), echo → GPIO(18)
+- DC Motor pairs: left=(in1→11, in2→12), right=(in1→15, in2→13)
+- I2C devices (LCD, OLED): sda→pin3, scl→pin5, vcc→1(3V3), gnd→6
 - The "ref" values are local names you choose; the executor maps them to real IDs
 - Include complete, working Python code in the "code" field using gpiozero
+- For BEGINNERS always add a resistor component between LED and GPIO
+
+### Pre-built patterns (use these exact wiring when user asks for these):
+
+**Blinking LED (beginner):**
+Components: led-red + resistor
+Wires: led anode→11, cathode→9; code: LED(17).blink()
+
+**Smart Home:** pir-sensor + dht22 + led-green (living room) + led-blue (bedroom) + buzzer (doorbell)
+Wires: pir out→7, vcc→1, gnd→6 | dht22 data→15, vcc→17, gnd→9 | led-green anode→11, cathode→14 | led-blue anode→13, cathode→20 | buzzer positive→12, negative→25
+
+**Smart Office:** pir-sensor + led-green + led-blue + dht22 + relay
+Wires: pir out→7, vcc→1, gnd→6 | led-green anode→11, cathode→14 | led-blue anode→12, cathode→20 | dht22 data→15, vcc→17, gnd→25 | relay signal→13, vcc→2, gnd→30
+
+**Obstacle Robot:** hc-sr04 + dc-motor (left) + dc-motor (right)
+Wires: sonar trig→16, echo→18, vcc→2, gnd→6 | left in1→11, in2→12, vcc→4, gnd→9 | right in1→15, in2→13, vcc→4, gnd→14
+Code: Robot(left=(17,18), right=(22,27)); DistanceSensor(echo=24, trigger=23)
+
+**Networking/MQTT (simulate):** Use Python's simulated MQTT class — no extra hardware needed, just print JSON messages to the console. Include a MQTT class in code that calls print() to simulate broker messages.
 `;
 
   const modeInstructions: Record<string, string> = {
@@ -99,10 +128,13 @@ Format your response with clear sections: ✅ What's correct, ⚠️ Issues foun
 3. An explanation of each change made
 Format: brief diagnosis → corrected code block → explanation.`,
     generate: `You are a PROJECT BUILDER for Raspberry Pi. The user describes what they want — you build it directly on the canvas.
-Provide a brief explanation of what you're building, then ALWAYS end with a <piforge-build> JSON block.
+Provide a brief (2-3 sentence) explanation of what you're building and how it works, then ALWAYS end with a <piforge-build> JSON block.
+When the user asks for "smart home", "smart office", "robot", or "obstacle detection" — use the pre-built patterns in the build capability prompt exactly.
+When the user asks about "networking" or "MQTT" or "IoT" — build a relevant hardware circuit (sensors/actuators) and include a simulated MQTT class in the Python code.
 ${buildCapabilityPrompt}`,
     chat: `You are a helpful assistant. Answer concisely and practically. When showing code, use Python code blocks.
 If the user asks you to build, create, make, or wire anything, ALWAYS include a <piforge-build> block.
+When the user mentions "smart home", "smart office", "robot", "breadboard", "networking", or "MQTT" and asks to build it, use the pre-built patterns from the build capability prompt.
 ${buildCapabilityPrompt}`,
   };
 
