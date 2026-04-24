@@ -4,8 +4,9 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import {
   Play, Pause, Square, Download,
   Cpu, Loader2, Image, FileText, RefreshCw,
-  Undo2, Redo2, FolderOpen, ChevronDown, HelpCircle, Home, Building2, MessageSquare,
+  Undo2, Redo2, FolderOpen, ChevronDown, HelpCircle, Home, Building2, MessageSquare, Globe2,
 } from 'lucide-react';
+import { useSimHubStore } from '@/stores/simHubStore';
 import { useFeedbackStore } from '@/stores/feedbackStore';
 import { useTourStore } from '@/stores/tourStore';
 import { BOARD_CATALOG } from '@/lib/boards';
@@ -66,6 +67,7 @@ export default function TopBar() {
   const setActiveEnvironment = useCanvasStore((s) => s.setActiveEnvironment);
   const showPrompt           = useContextPromptStore((s) => s.show);
   const setCode              = useProjectStore((s) => s.setCode);
+  const showSimHub           = useSimHubStore((s) => s.show);
 
   // Keyboard shortcuts: Ctrl+Z, Ctrl+Y/Shift+Z, Ctrl+S
   useEffect(() => {
@@ -465,6 +467,16 @@ export default function TopBar() {
           title="Take a guided tour"
         >
           <HelpCircle className="h-4 w-4" />
+        </button>
+
+        {/* ── Worlds / Sim Hub button ── */}
+        <button
+          onClick={showSimHub}
+          className="flex items-center gap-1.5 rounded-lg border border-green-500/40 bg-green-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-green-400 hover:bg-green-500/20 transition-colors"
+          title="Choose a simulation world — Smart Home, Robot, Farm, Network Lab…"
+        >
+          <Globe2 className="h-3.5 w-3.5" />
+          Worlds
         </button>
 
         {/* ── Feedback button ── */}

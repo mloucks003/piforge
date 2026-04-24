@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Code, Cpu, FileCode, CheckCircle, AlertCircle, Circle, Sparkles, Bug, Wrench, BookOpen, GraduationCap, Play, Square, Network } from 'lucide-react';
 import { useProjectStore } from '@/stores/projectStore';
@@ -231,6 +231,16 @@ function PropertiesTab() {
 
 export default function RightPanel() {
   const [activeTab, setActiveTab] = useState<Tab>('editor');
+
+  // Listen for SimHub tab-switch requests (e.g. after launching a scenario)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const tab = (e as CustomEvent<string>).detail as Tab;
+      if (tab) setActiveTab(tab);
+    };
+    window.addEventListener('piforge:tab', handler);
+    return () => window.removeEventListener('piforge:tab', handler);
+  }, []);
   const code     = useProjectStore((s) => s.code);
   const language = useProjectStore((s) => s.language);
   const setCode  = useProjectStore((s) => s.setCode);

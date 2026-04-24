@@ -10,6 +10,7 @@ import { touchscreenDashboardTutorial } from './definitions/touchscreen-dashboar
 import { smartHomeTutorial }          from './definitions/smart-home';
 import { smartOfficeTutorial }        from './definitions/smart-office';
 import { obstacleRobotTutorial }      from './definitions/obstacle-robot';
+import { smartFarmTutorial }          from './definitions/smart-farm';
 import type { TutorialDefinition } from './types';
 
 export const tutorials: TutorialDefinition[] = [
@@ -25,6 +26,7 @@ export const tutorials: TutorialDefinition[] = [
   smartHomeTutorial,
   smartOfficeTutorial,
   obstacleRobotTutorial,
+  smartFarmTutorial,
 ];
 export function getTutorial(id: string) { return tutorials.find(t => t.id === id); }
 export type { TutorialDefinition, TutorialStep, CompletionCondition } from './types';

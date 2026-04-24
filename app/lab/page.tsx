@@ -12,6 +12,7 @@ import TutorialOverlay from '@/components/tour/TutorialOverlay';
 import WelcomeModal from '@/components/tour/WelcomeModal';
 import ContextualPrompt from '@/components/tour/ContextualPrompt';
 import Toaster from '@/components/ui/Toaster';
+import SimHub from '@/components/sim/SimHub';
 
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight } from 'lucide-react';
 import { useFeedbackStore } from '@/stores/feedbackStore';
@@ -124,6 +125,7 @@ export default function LabPage() {
       <TutorialOverlay />
       <ContextualPrompt />
       <Toaster />
+      <SimHub />
       <TopBar />
       <BetaBanner />
       <div className="flex flex-1 overflow-hidden">
