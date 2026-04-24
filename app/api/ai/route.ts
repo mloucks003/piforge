@@ -118,7 +118,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: msg }, { status: response.status });
     }
 
-    // Stream OpenAI's SSE response directly to the client
+    // Stream OpenAI's SSE response directly to the client.
+    // We keep a leftover buffer so JSON lines split across two network packets
+    // are never dropped (which causes garbled / truncated output).
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
@@ -126,21 +128,36 @@ export async function POST(req: NextRequest) {
     (async () => {
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
+      let buffer = '';
       try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          // Parse SSE lines and extract delta content
-          for (const line of chunk.split('\n')) {
-            if (!line.startsWith('data: ')) continue;
-            const data = line.slice(6).trim();
+          buffer += decoder.decode(value, { stream: true });
+          // Process only complete lines; keep any partial line in the buffer
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? ''; // last element may be incomplete
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data: ')) continue;
+            const data = trimmed.slice(6).trim();
             if (data === '[DONE]') continue;
             try {
               const parsed = JSON.parse(data);
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) await writer.write(encoder.encode(delta));
-            } catch { /* skip malformed lines */ }
+            } catch { /* skip keep-alive / non-JSON lines */ }
+          }
+        }
+        // Flush any remaining buffered line
+        if (buffer.trim().startsWith('data: ')) {
+          const data = buffer.trim().slice(6).trim();
+          if (data && data !== '[DONE]') {
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) await writer.write(encoder.encode(delta));
+            } catch { /* ignore */ }
           }
         }
       } finally {
