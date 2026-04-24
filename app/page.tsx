@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import {
-  Cpu, Zap, Cable, Code, CircuitBoard, Users, Share2,
-  BookOpen, Download, Wifi, Monitor, Layers, ArrowRight,
-  GitFork, Star, Sparkles, GraduationCap, Globe,
+  Cpu, Zap, Cable, Code, CircuitBoard, Users,
+  BookOpen, Download, Monitor, Layers, ArrowRight,
+  GitFork, Sparkles, GraduationCap, Globe,
   Home, Building2, ChevronDown, Undo2, Redo2,
   Play, Pause, Square, Search, HelpCircle,
+  FlaskConical, Network as NetworkIcon, Leaf,
 } from 'lucide-react';
 
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } };
@@ -61,7 +62,7 @@ export default function LandingPage() {
         </div>
         <motion.div initial="hidden" animate="visible" variants={stagger} className="relative max-w-4xl mx-auto text-center">
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-4 py-1.5 text-sm text-green-400 mb-6">
-            <Sparkles className="h-4 w-4" /> Pi 4 · Pi 5 · Pi Zero 2 W · Arduino Uno · Pi Pico W
+            <Sparkles className="h-4 w-4" /> Pi 4 · Pi 5 · Pi Zero 2 W · Arduino Uno · Pi Pico W · Wiring Labs · Live Scenes
           </motion.div>
           <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
             The Virtual{' '}
@@ -98,7 +99,7 @@ export default function LandingPage() {
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="max-w-6xl mx-auto">
           <motion.div variants={fadeUp} className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">Your lab, in the browser</h2>
-            <p className="text-muted-foreground">Build a Smart Home Hub — wire PIR motion, DHT22 temperature, and MQTT lighting. No hardware needed.</p>
+            <p className="text-muted-foreground">Smart Home · Smart Farm · Robot · Network Lab — one click launches a full wired circuit, live scene, and Python code. No hardware needed.</p>
           </motion.div>
 
           <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-background overflow-hidden shadow-2xl shadow-green-500/5">
@@ -123,9 +124,9 @@ export default function LandingPage() {
                 className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" /> Running
               </motion.span>
-              <div className="flex items-center gap-0.5 rounded border border-border bg-muted/40 p-0.5 ml-1">
-                <div className="rounded p-1 bg-green-500/20"><Home className="h-3 w-3 text-green-400" /></div>
-                <div className="rounded p-1 text-muted-foreground"><Building2 className="h-3 w-3" /></div>
+              <div className="flex items-center gap-1 rounded-lg border border-green-500/40 bg-green-500/15 px-2 py-0.5 ml-1">
+                <Globe className="h-3 w-3 text-green-400" />
+                <span className="text-[9px] font-bold text-green-400">Worlds</span>
               </div>
               <HelpCircle className="h-3.5 w-3.5 text-muted-foreground ml-1" />
               <div className="w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-[8px] font-bold text-green-400">M</div>
@@ -175,15 +176,31 @@ export default function LandingPage() {
               <div className="col-span-7 bg-[#0a0f14] relative overflow-hidden">
                 <div className="absolute inset-0 opacity-[0.06]" style={{backgroundImage:'radial-gradient(circle,#555 1px,transparent 1px)',backgroundSize:'20px 20px'}} />
 
-                {/* Smart home floor plan overlay (faint) */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{opacity:0.08}}>
-                  <rect x="200" y="8" width="165" height="125" rx="4" fill="none" stroke="#22c55e" strokeWidth="1.5"/>
-                  <text x="208" y="24" fill="#22c55e" fontSize="7.5">🛋️ Living Room</text>
-                  <rect x="374" y="8" width="105" height="78" rx="4" fill="none" stroke="#fbbf24" strokeWidth="1.5"/>
-                  <text x="382" y="24" fill="#fbbf24" fontSize="7.5">🍳 Kitchen</text>
-                  <rect x="200" y="142" width="115" height="105" rx="4" fill="none" stroke="#818cf8" strokeWidth="1.5"/>
-                  <text x="208" y="158" fill="#818cf8" fontSize="7.5">🛏️ Bedroom</text>
+                {/* Live Scene badge */}
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-md border border-green-500/30 bg-green-500/10 px-2 py-0.5">
+                  <motion.div animate={{opacity:[1,0.3,1]}} transition={{duration:1.5,repeat:Infinity}} className="w-1.5 h-1.5 rounded-full bg-green-400"/>
+                  <span className="text-[8px] font-semibold text-green-400">Live Scene — Smart Home</span>
+                </div>
+
+                {/* Smart home floor plan overlay */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{opacity:0.22}}>
+                  <rect x="200" y="22" width="165" height="125" rx="4" fill="#22c55e08" stroke="#22c55e" strokeWidth="1.5"/>
+                  <text x="208" y="38" fill="#22c55e" fontSize="8" fontWeight="600">🛋️ Living Room</text>
+                  <rect x="374" y="22" width="105" height="78" rx="4" fill="#fbbf2408" stroke="#fbbf24" strokeWidth="1.5"/>
+                  <text x="382" y="38" fill="#fbbf24" fontSize="8" fontWeight="600">🍳 Kitchen</text>
+                  <rect x="200" y="156" width="115" height="95" rx="4" fill="#818cf808" stroke="#818cf8" strokeWidth="1.5"/>
+                  <text x="208" y="172" fill="#818cf8" fontSize="8" fontWeight="600">🛏️ Bedroom</text>
+                  <rect x="374" y="110" width="105" height="65" rx="4" fill="#f9731608" stroke="#f97316" strokeWidth="1.5"/>
+                  <text x="382" y="126" fill="#f97316" fontSize="8" fontWeight="600">🚿 Bathroom</text>
                 </svg>
+
+                {/* Room light glow — pulses when motion fires */}
+                <motion.div
+                  animate={{opacity:[0,0.35,0]}}
+                  transition={{duration:2,repeat:Infinity,delay:3,repeatDelay:3}}
+                  className="absolute rounded-full pointer-events-none"
+                  style={{top:55,left:220,width:100,height:70,background:'radial-gradient(ellipse,#22c55e60,transparent 70%)'}}
+                />
 
                 {/* Pi 4 board */}
                 <motion.div initial={{opacity:0,scale:0.92}} animate={{opacity:1,scale:1}} transition={{delay:0.3,duration:0.5}}
@@ -277,47 +294,47 @@ export default function LandingPage() {
               <div className="col-span-3 border-l border-border flex flex-col bg-background">
                 {/* Tabs — matches real lab exactly */}
                 <div className="flex shrink-0 border-b border-border">
-                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-medium border-b-2 border-primary text-foreground">
-                    <Code className="h-3 w-3"/>Editor
+                  <div className="flex-1 flex items-center justify-center gap-0.5 py-2 text-[9px] font-medium border-b-2 border-primary text-foreground">
+                    <Code className="h-2.5 w-2.5"/>Editor
                   </div>
-                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">
-                    <CircuitBoard className="h-3 w-3"/>Circuit
+                  <div className="flex-1 flex items-center justify-center gap-0.5 py-2 text-[9px] text-muted-foreground">
+                    <CircuitBoard className="h-2.5 w-2.5"/>Circuit
                   </div>
-                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">
-                    <BookOpen className="h-3 w-3"/>Docs
+                  <div className="flex-1 flex items-center justify-center gap-0.5 py-2 text-[9px] text-muted-foreground">
+                    <Sparkles className="h-2.5 w-2.5 text-purple-400"/>
+                    <span className="text-purple-400">AI</span>
                   </div>
-                  <div className="flex-1 flex items-center justify-center gap-1 py-2 text-[10px] text-muted-foreground">
-                    <Sparkles className="h-3 w-3 text-purple-400"/>
-                    <span>AI</span>
-                    <span className="text-[8px] px-1 rounded-full bg-purple-500/20 text-purple-400">AI</span>
+                  <div className="flex-1 flex items-center justify-center gap-0.5 py-2 text-[9px] text-muted-foreground">
+                    <FlaskConical className="h-2.5 w-2.5 text-blue-400"/>
+                    <span className="text-blue-400">Labs</span>
+                  </div>
+                  <div className="flex-1 flex items-center justify-center gap-0.5 py-2 text-[9px] text-muted-foreground">
+                    <NetworkIcon className="h-2.5 w-2.5"/>Net
                   </div>
                 </div>
 
                 {/* Monaco-style editor */}
                 <div className="flex-1 bg-[#1e1e1e] p-3 font-mono text-[10px] leading-[1.6] overflow-hidden min-h-0">
                   <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.5}}>
-                    <div className="text-green-400/60"># 🏠 Smart Home Hub</div>
-                    <div><span className="text-blue-400">import</span> <span className="text-yellow-200">RPi.GPIO</span> <span className="text-blue-400">as</span> GPIO</div>
-                    <div><span className="text-blue-400">import</span> time, json</div>
+                    <div className="text-green-400/60"># 🏠 Smart Home — Auto-generated by PiForge AI</div>
+                    <div><span className="text-blue-400">from</span> <span className="text-yellow-200">gpiozero</span> <span className="text-blue-400">import</span> LED, MotionSensor</div>
+                    <div><span className="text-blue-400">from</span> <span className="text-yellow-200">Adafruit_DHT</span> <span className="text-blue-400">import</span> read_retry, DHT22</div>
+                    <div><span className="text-blue-400">import</span> time</div>
                     <div className="h-1.5"/>
-                    <div>GPIO.<span className="text-yellow-300">setmode</span>(GPIO.BCM)</div>
+                    <div className="text-green-400/60"># Components wired on canvas</div>
+                    <div>pir   = <span className="text-yellow-300">MotionSensor</span>(<span className="text-cyan-400">4</span>)</div>
+                    <div>light = <span className="text-yellow-300">LED</span>(<span className="text-cyan-400">17</span>)</div>
                     <div className="h-1.5"/>
-                    <div className="text-green-400/60"># Pins</div>
-                    <div>PIR_PIN  = <span className="text-cyan-400">4</span></div>
-                    <div>LIGHT    = <span className="text-cyan-400">17</span></div>
-                    <div>DHT_PIN  = <span className="text-cyan-400">22</span></div>
-                    <div className="h-1.5"/>
-                    <div>GPIO.<span className="text-yellow-300">setup</span>(PIR_PIN, GPIO.IN)</div>
-                    <div>GPIO.<span className="text-yellow-300">setup</span>(LIGHT,   GPIO.OUT)</div>
-                    <div className="h-1.5"/>
+                    <div><span className="text-green-400">print</span>(<span className="text-orange-300">&quot;🏠 Smart Home running…&quot;</span>)</div>
                     <div><span className="text-blue-400">while</span> <span className="text-cyan-300">True</span>:</div>
-                    <div className="pl-3"><span className="text-blue-400">if</span> GPIO.<span className="text-yellow-300">input</span>(PIR_PIN):</div>
+                    <div className="pl-3"><span className="text-blue-400">if</span> pir.motion_detected:</div>
                     <motion.div className="pl-6 text-green-300" animate={{opacity:[1,0.3,1]}} transition={{duration:1.2,repeat:Infinity,delay:3}}>
-                      GPIO.<span className="text-yellow-300">output</span>(LIGHT,<span className="text-cyan-400">1</span>)
+                      light.<span className="text-yellow-300">on</span>()
                     </motion.div>
-                    <div className="pl-6"><span className="text-green-400">print</span>(<span className="text-orange-300">&quot;Motion!&quot;</span>)</div>
+                    <div className="pl-6"><span className="text-green-400">print</span>(<span className="text-orange-300">&quot;Motion → lights ON&quot;</span>)</div>
                     <div className="pl-3"><span className="text-blue-400">else</span>:</div>
-                    <div className="pl-6">GPIO.<span className="text-yellow-300">output</span>(LIGHT,<span className="text-cyan-400">0</span>)</div>
+                    <div className="pl-6">light.<span className="text-yellow-300">off</span>()</div>
+                    <div className="pl-3">time.<span className="text-yellow-300">sleep</span>(<span className="text-cyan-400">1</span>)</div>
                   </motion.div>
                 </div>
 
@@ -330,10 +347,11 @@ export default function LandingPage() {
                   <div className="p-2 font-mono text-[10px] space-y-0.5 overflow-hidden flex-1">
                     <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.5}} className="text-muted-foreground/70">Pyodide 3.12 ready.</motion.div>
                     <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.0}} className="text-green-400">🏠 Smart Home Hub — Online</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.6}} className="text-blue-400">🌡️ Temp: 22.4°C · 63% RH</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:[0,1,1,0.7]}} transition={{delay:3.5,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-yellow-400">🚶 Motion — GPIO4 HIGH</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,1,0.8]}} transition={{delay:4.0,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-green-400">💡 Living room ON</motion.div>
-                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,0,1,0.7]}} transition={{delay:4.4,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-cyan-400">📤 MQTT: home/living_room</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.4}} className="text-blue-400">🌡️ Temp: 22.4°C · Humidity: 63%</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.8}} className="text-muted-foreground/60">🖼️ Live Scene: floor plan active</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:[0,1,1,0.7]}} transition={{delay:3.5,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-yellow-400">🚶 Motion → GPIO4 HIGH</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,1,0.8]}} transition={{delay:4.0,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-green-400">💡 Living room light ON (GPIO17)</motion.div>
+                    <motion.div initial={{opacity:0}} animate={{opacity:[0,0,0,1,0.7]}} transition={{delay:4.5,duration:0.4,repeat:Infinity,repeatDelay:5}} className="text-cyan-400">✅ Lab step 4/5 complete</motion.div>
                   </div>
                 </div>
               </div>
@@ -347,10 +365,10 @@ export default function LandingPage() {
       <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="border-y border-border bg-muted/30">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 px-6 py-10">
           {[
-            { num: '5',    label: 'Boards Supported' },
-            { num: '22+',  label: 'Components' },
-            { num: '3',    label: 'Languages (Python, MicroPython, C++)' },
-            { num: '100%', label: 'Browser-Native' },
+            { num: '5',    label: 'Boards (Pi 4, Pi 5, Zero 2W, Uno, Pico W)' },
+            { num: '25+',  label: 'Drag-and-Drop Components' },
+            { num: '6',    label: 'Simulation Worlds (Home, Farm, Robot…)' },
+            { num: '100%', label: 'Runs in the Browser — No Install' },
           ].map((s) => (
             <motion.div key={s.label} variants={fadeUp} className="text-center">
               <div className="text-3xl font-bold text-green-500">{s.num}</div>
@@ -374,9 +392,9 @@ export default function LandingPage() {
               { icon: Code, title: 'Python · MicroPython · C++', desc: 'GPIO Zero and RPi.GPIO via Pyodide for Pi boards. MicroPython for Pico. Arduino C++ sketch format. All in browser.', color: 'text-purple-500' },
               { icon: Zap, title: 'Real-Time I/O', desc: 'Set a pin HIGH and the LED glows. Click a button and your code reads the edge. Bidirectional, sub-50ms.', color: 'text-yellow-500' },
               { icon: Layers, title: 'Component Library', desc: 'LEDs, buttons, sensors, motors, displays, and touchscreens. JSON-based — add your own components.', color: 'text-orange-500' },
-              { icon: Monitor, title: 'Programmable Displays', desc: 'Attach virtual touchscreens via simulated DSI/SPI. Render pygame output and send touch events back.', color: 'text-cyan-500' },
-              { icon: Users, title: 'Collaborate', desc: 'Share projects with a link. Fork circuits from the community. Real-time multi-user editing coming soon.', color: 'text-pink-500' },
-              { icon: BookOpen, title: 'Guided Tutorials', desc: 'Step-by-step lessons from blinking an LED to building a sensor dashboard. Perfect for beginners.', color: 'text-emerald-500' },
+              { icon: FlaskConical, title: 'Interactive Wiring Labs', desc: 'Like a real kit — components are placed for you, but you drag every wire yourself. Live ✅/❌ feedback on each connection. Unlock code only when fully wired.', color: 'text-blue-500' },
+              { icon: Leaf, title: 'Live Scene Environments', desc: 'Your GPIO pins control a living world. Greenhouse plants grow, home lights glow, robot wheels spin — all reacting to your code in real time.', color: 'text-emerald-500' },
+              { icon: BookOpen, title: '18+ Guided Projects', desc: 'From Blink an LED to obstacle-avoiding robots. Step-by-step tutorials with auto-wired circuits and complete Python code — ready to run in one click.', color: 'text-orange-500' },
               { icon: Download, title: 'Export Anywhere', desc: 'Export as PNG, hardware build guide, or share link. Take your virtual prototype to real hardware.', color: 'text-red-500' },
             ].map((f) => (
               <motion.div key={f.title} variants={fadeUp} className="group rounded-xl border border-border bg-muted/20 p-6 hover:border-green-500/30 hover:bg-muted/40 transition-all">
