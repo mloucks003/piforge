@@ -18,7 +18,7 @@ const WELCOME: Msg[] = [
   },
   {
     from: 'team',
-    text: "Ask us anything — bugs, feedback, billing, or general questions. Leave your email and we'll reply within 24 hours!",
+    text: "Ask us anything — bugs, feedback, billing, or general questions. Enter your email below so we can reply within 24 hours!",
   },
 ];
 
@@ -36,7 +36,7 @@ export default function SupportChat() {
   }, [msgs]);
 
   async function send() {
-    if (!input.trim()) return;
+    if (!input.trim() || !email.trim()) return;
     const userMsg = input.trim();
     setMsgs(m => [...m, { from: 'user', text: userMsg }]);
     setInput('');
@@ -58,9 +58,7 @@ export default function SupportChat() {
       if (!data.ok) throw new Error(data.error ?? 'Failed');
       setMsgs(m => [...m, {
         from: 'team',
-        text: email
-          ? `Got it! We'll reply to ${email} within 24 hours. 🙏`
-          : "Got it! Drop your email below if you'd like a reply — otherwise we'll look into it. 🙏",
+        text: `Got it! We'll reply to ${email} within 24 hours. 🙏`,
       }]);
       setStage('sent');
     } catch {
@@ -124,12 +122,13 @@ export default function SupportChat() {
 
           {/* Input area */}
           <div className="border-t border-border p-3 space-y-2">
-            {!email && stage !== 'sent' && (
+            {stage !== 'sent' && (
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="Your email for a reply (optional)"
+                placeholder="Your email (required to reply)"
+                required
                 className="w-full rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-blue-500/60 transition-colors"
               />
             )}
@@ -145,7 +144,7 @@ export default function SupportChat() {
                     placeholder="Type a message… (Enter to send)"
                     className="flex-1 rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-blue-500/60 resize-none transition-colors"
                   />
-                  <button onClick={send} disabled={!input.trim() || sending}
+                  <button onClick={send} disabled={!input.trim() || !email.trim() || sending}
                     className="flex items-center justify-center rounded-lg bg-blue-600 px-3 text-white hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     <Send className="h-4 w-4" />
                   </button>

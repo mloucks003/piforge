@@ -28,7 +28,7 @@ export default function FeedbackModal() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !email.trim()) return;
     setSending(true);
     setSendError('');
     try {
@@ -138,9 +138,10 @@ export default function FeedbackModal() {
 
             {/* Email */}
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">Your email (optional — for follow-up)</label>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">Your email <span className="text-red-400">*</span> (required — so we can reply)</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                required
                 className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/60 transition-colors"
               />
             </div>
@@ -151,7 +152,7 @@ export default function FeedbackModal() {
                 className="flex-1 rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-accent transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={!message.trim() || sending}
+              <button type="submit" disabled={!message.trim() || !email.trim() || sending}
                 className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                 <Send className="h-3.5 w-3.5" /> {sending ? 'Sending…' : 'Submit & Get Lifetime Code'}
               </button>
