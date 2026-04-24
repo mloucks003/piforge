@@ -112,6 +112,10 @@ Wires: pir out→7, vcc→1, gnd→6 | led-green anode→11, cathode→14 | led-
 Wires: sonar trig→16, echo→18, vcc→2, gnd→6 | left in1→11, in2→12, vcc→4, gnd→9 | right in1→15, in2→13, vcc→4, gnd→14
 Code: Robot(left=(17,18), right=(22,27)); DistanceSensor(echo=24, trigger=23)
 
+**Smart Farm / Irrigation:** dht22 + relay + led-green
+Wires: dht22 data→15, vcc→17, gnd→9 | relay signal→13, vcc→2, gnd→14 | led-green anode→11, cathode→6
+Code: reads simulated soil moisture (random 15-85%), turns relay+LED on when moisture < 40% for 2 s, reads DHT22 for temp/humidity, prints cycle report each second.
+
 **Networking/MQTT (simulate):** Use Python's simulated MQTT class — no extra hardware needed, just print JSON messages to the console. Include a MQTT class in code that calls print() to simulate broker messages.
 `;
 
@@ -129,12 +133,12 @@ Format your response with clear sections: ✅ What's correct, ⚠️ Issues foun
 Format: brief diagnosis → corrected code block → explanation.`,
     generate: `You are a PROJECT BUILDER for Raspberry Pi. The user describes what they want — you build it directly on the canvas.
 Provide a brief (2-3 sentence) explanation of what you're building and how it works, then ALWAYS end with a <piforge-build> JSON block.
-When the user asks for "smart home", "smart office", "robot", or "obstacle detection" — use the pre-built patterns in the build capability prompt exactly.
+When the user asks for "smart home", "smart office", "robot", "obstacle detection", "farm", or "irrigation" — use the pre-built patterns in the build capability prompt exactly.
 When the user asks about "networking" or "MQTT" or "IoT" — build a relevant hardware circuit (sensors/actuators) and include a simulated MQTT class in the Python code.
 ${buildCapabilityPrompt}`,
     chat: `You are a helpful assistant. Answer concisely and practically. When showing code, use Python code blocks.
 If the user asks you to build, create, make, or wire anything, ALWAYS include a <piforge-build> block.
-When the user mentions "smart home", "smart office", "robot", "breadboard", "networking", or "MQTT" and asks to build it, use the pre-built patterns from the build capability prompt.
+When the user mentions "smart home", "smart office", "robot", "farm", "irrigation", "breadboard", "networking", or "MQTT" and asks to build it, use the pre-built patterns from the build capability prompt.
 ${buildCapabilityPrompt}`,
   };
 
