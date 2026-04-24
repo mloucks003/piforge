@@ -33,15 +33,30 @@ export default function AuthModal() {
     setLoading(true); reset();
     const res = signIn(email, password);
     setLoading(false);
-    if (!res.ok) setError(res.error ?? 'Sign in failed.');
+    if (!res.ok) { setError(res.error ?? 'Sign in failed.'); return; }
+    // Best-effort: record sign-in in Supabase for existing users who weren't captured at signup
+    const u = useAuthStore.getState().user;
+    if (u) {
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: u.email, name: u.name }),
+      }).catch(() => {});
+    }
   };
 
   const handleSignUp = async () => {
     setLoading(true); reset();
     const res = signUp(email, name, password);
     setLoading(false);
-    if (!res.ok) setError(res.error ?? 'Sign up failed.');
-    else setSuccess('Account created! You\'re signed in.');
+    if (!res.ok) { setError(res.error ?? 'Sign up failed.'); return; }
+    setSuccess('Account created! You\'re signed in.');
+    // Fire-and-forget: record signup in Supabase (fails silently if DB not configured)
+    fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase(), name: name.trim() }),
+    }).catch(() => { /* ignore — DB logging is best-effort */ });
   };
 
   const handlePromo = () => {
@@ -136,6 +151,16 @@ export default function AuthModal() {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Migration notice — shown only on sign-in tab */}
+                  {tab === 'signin' && (
+                    <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-3 py-2.5 text-xs text-yellow-300 leading-relaxed">
+                      <strong className="text-yellow-200">⚠️ Platform upgrade:</strong> We moved to a real database on April 24, 2025. If your old login doesn&apos;t work, please{' '}
+                      <button onClick={() => changeTab('signup')} className="underline text-yellow-200 hover:text-white font-semibold">
+                        create a new account
+                      </button>
+                      {' '}— it only takes 30 seconds. Sorry for the inconvenience!
+                    </div>
+                  )}
                   {tab === 'signup' && (
                     <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name"
                       className="w-full rounded-xl border border-border bg-muted px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
