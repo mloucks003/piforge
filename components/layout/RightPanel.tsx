@@ -292,7 +292,7 @@ export default function RightPanel() {
   }, []);
 
   const handleStop = useCallback(() => {
-    getSimulationEngine()?.stop();
+    getSimulationEngine()?.reset();
   }, []);
 
   const TABS = [
