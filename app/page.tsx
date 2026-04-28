@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,8 +19,41 @@ const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 
 export default function LandingPage() {
   const { user, openModal } = useAuthStore();
+
+  // Feedback form state
+  const [fbName, setFbName]       = useState('');
+  const [fbEmail, setFbEmail]     = useState('');
+  const [fbMsg, setFbMsg]         = useState('');
+  const [fbSent, setFbSent]       = useState(false);
+  const [fbSending, setFbSending] = useState(false);
+
+  const sendFeedback = async () => {
+    if (!fbMsg.trim()) return;
+    setFbSending(true);
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'Beta Feedback', message: fbMsg, senderName: fbName || 'Anonymous', senderEmail: fbEmail || undefined }),
+      });
+      setFbSent(true);
+    } catch { /* ignore */ }
+    setFbSending(false);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+
+      {/* ── Beta Banner ── */}
+      <div className="bg-green-600 text-white text-center py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-3 flex-wrap">
+        <span>🚧 <strong>Public Beta</strong> — Everything is completely <strong>FREE</strong> right now.</span>
+        <span className="flex items-center gap-2">
+          Use code
+          <span className="font-mono font-black bg-white/20 border border-white/30 rounded px-2 py-0.5 tracking-widest text-white">TESTDEV</span>
+          after signing up to unlock all Pro features.
+        </span>
+      </div>
+
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
@@ -600,10 +634,25 @@ export default function LandingPage() {
       {/* ── Pricing ── */}
       <section id="pricing" className="py-24 px-6">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="max-w-5xl mx-auto">
-          <motion.div variants={fadeUp} className="text-center mb-12">
+          <motion.div variants={fadeUp} className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
-            <p className="text-muted-foreground max-w-md mx-auto">Start free. Upgrade when you need robotics, advanced sensors, and classroom features.</p>
+            <p className="text-muted-foreground max-w-md mx-auto">Plans for when we exit beta. Right now? Everything is free.</p>
           </motion.div>
+
+          {/* Beta free callout */}
+          <motion.div variants={fadeUp} className="mb-10 rounded-2xl border-2 border-green-500/40 bg-green-500/5 p-6 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-500/15 border border-green-500/30 px-4 py-1 text-sm font-semibold text-green-400 mb-3">
+              🚧 Public Beta — Active Now
+            </div>
+            <p className="text-lg font-bold text-foreground mb-1">Everything is completely free right now.</p>
+            <p className="text-sm text-muted-foreground mb-4">Sign up and use the code below to unlock all Pro &amp; Education features at no cost.</p>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <span className="text-sm text-muted-foreground">Promo code:</span>
+              <span className="font-mono font-black text-2xl tracking-widest text-green-400 bg-green-500/10 border border-green-500/30 rounded-xl px-5 py-2">TESTDEV</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">Enter this code in your account settings after signing up.</p>
+          </motion.div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { name:'Free', price:'$0', period:'forever', border:'border-border', badge:'', cta:'Get Started', ctaClass:'border border-border hover:bg-accent',
@@ -645,16 +694,69 @@ export default function LandingPage() {
       {/* ── CTA ── */}
       <section className="py-24 px-6 bg-muted/10 border-t border-border">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to build?</h2>
-          <p className="text-lg text-muted-foreground mb-8">Start free with 3 projects. Upgrade to Pro for robotics, sensors, and 18+ tutorials.</p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-green-500/10 border border-green-500/30 px-4 py-1.5 text-sm font-semibold text-green-400 mb-6">
+            🚧 Public Beta — 100% Free Right Now
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">Ready to build?</h2>
+          <p className="text-lg text-muted-foreground mb-3">Sign up free — then enter code <span className="font-mono font-black text-green-400 bg-green-500/10 border border-green-500/20 rounded px-2 py-0.5">TESTDEV</span> to unlock every Pro feature.</p>
+          <p className="text-sm text-muted-foreground mb-8">No credit card. No limits. Just build.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/lab" className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-10 py-4 text-xl font-semibold text-white hover:bg-green-500 transition-all hover:scale-105 shadow-lg shadow-green-600/25">
-              Start for Free <ArrowRight className="h-6 w-6" />
+              Start Building Free <ArrowRight className="h-6 w-6" />
             </Link>
             <a href="#pricing" className="inline-flex items-center gap-2 rounded-xl border border-border px-8 py-4 text-lg font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
               See Plans
             </a>
           </div>
+        </motion.div>
+      </section>
+
+      {/* ── Feedback ── */}
+      <section className="py-20 px-6 border-t border-border bg-muted/10">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="max-w-2xl mx-auto text-center">
+          <motion.div variants={fadeUp}>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm text-blue-400 mb-4">
+              💬 We read every message
+            </div>
+            <h2 className="text-3xl font-bold mb-3">Help shape PiForge</h2>
+            <p className="text-muted-foreground mb-8">We&apos;re in public beta and actively improving. Tell us what&apos;s broken, what you love, or what you wish existed. Your feedback directly drives what we build next.</p>
+          </motion.div>
+
+          {fbSent ? (
+            <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}}
+              className="rounded-2xl border border-green-500/30 bg-green-500/5 p-8 text-center">
+              <div className="text-4xl mb-3">🎉</div>
+              <p className="text-lg font-bold text-foreground mb-1">Thank you!</p>
+              <p className="text-sm text-muted-foreground">Your feedback has been sent — we&apos;ll read it and take it seriously.</p>
+            </motion.div>
+          ) : (
+            <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-background p-6 text-left space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Your name <span className="text-muted-foreground/50">(optional)</span></label>
+                  <input value={fbName} onChange={e => setFbName(e.target.value)}
+                    placeholder="e.g. Alex"
+                    className="w-full rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-green-500/50 transition-colors" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email <span className="text-muted-foreground/50">(optional — for replies)</span></label>
+                  <input value={fbEmail} onChange={e => setFbEmail(e.target.value)}
+                    placeholder="you@example.com" type="email"
+                    className="w-full rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-green-500/50 transition-colors" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Your feedback <span className="text-red-400">*</span></label>
+                <textarea value={fbMsg} onChange={e => setFbMsg(e.target.value)} rows={4}
+                  placeholder="What's working? What's broken? What feature would make PiForge 10× better?"
+                  className="w-full rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-green-500/50 transition-colors resize-none" />
+              </div>
+              <button onClick={sendFeedback} disabled={fbSending || !fbMsg.trim()}
+                className="w-full rounded-xl bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 text-sm transition-colors">
+                {fbSending ? 'Sending…' : 'Send Feedback →'}
+              </button>
+            </motion.div>
+          )}
         </motion.div>
       </section>
 
