@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
@@ -19,6 +19,16 @@ const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 
 export default function LandingPage() {
   const { user, openModal } = useAuthStore();
+
+  // Beta popup
+  const [showBetaPopup, setShowBetaPopup] = useState(false);
+  useEffect(() => {
+    if (!localStorage.getItem('piforge-beta-ack')) setShowBetaPopup(true);
+  }, []);
+  const acknowledgeBeta = () => {
+    localStorage.setItem('piforge-beta-ack', '1');
+    setShowBetaPopup(false);
+  };
 
   // Feedback form state
   const [fbName, setFbName]       = useState('');
@@ -43,6 +53,77 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+
+      {/* ── Beta Welcome Popup ── */}
+      {showBetaPopup && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="relative w-full max-w-lg rounded-2xl border border-yellow-500/30 bg-background shadow-2xl overflow-hidden"
+          >
+            {/* Top accent bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-yellow-500 via-green-500 to-blue-500" />
+
+            <div className="p-8">
+              {/* Header */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="text-4xl">🚧</div>
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-yellow-500/10 border border-yellow-500/30 px-3 py-0.5 text-xs font-semibold text-yellow-400 mb-2">
+                    PUBLIC BETA
+                  </div>
+                  <h2 className="text-2xl font-black text-foreground leading-tight">Welcome to PiForge Beta</h2>
+                  <p className="text-sm text-muted-foreground mt-1">A few things to know before you dive in.</p>
+                </div>
+              </div>
+
+              {/* Points */}
+              <div className="space-y-4 mb-7">
+
+                <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                  <span className="text-xl mt-0.5">⚠️</span>
+                  <div>
+                    <p className="text-sm font-bold text-foreground mb-0.5">Expect bugs</p>
+                    <p className="text-xs text-muted-foreground">We&apos;re in active development. You may run into errors, broken features, or rough edges. That&apos;s totally normal — we&apos;re fixing things daily.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+                  <span className="text-xl mt-0.5">🎁</span>
+                  <div>
+                    <p className="text-sm font-bold text-foreground mb-1">Everything is 100% free right now</p>
+                    <p className="text-xs text-muted-foreground mb-2">All Pro and Education features are unlocked during beta. After signing up, enter this code in your account settings:</p>
+                    <div className="inline-flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/30 px-4 py-2">
+                      <span className="text-xs text-muted-foreground">Promo code</span>
+                      <span className="font-mono font-black text-lg tracking-widest text-green-400">TESTDEV</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+                  <span className="text-xl mt-0.5">🏆</span>
+                  <div>
+                    <p className="text-sm font-bold text-foreground mb-0.5">Find a bug? Get 6 months free at launch</p>
+                    <p className="text-xs text-muted-foreground">When PiForge officially launches, anyone who reported a real bug during beta gets <strong className="text-foreground">6 months of Pro completely free</strong>. Use the feedback form on this page to report it — include your email so we can reach you.</p>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={acknowledgeBeta}
+                className="w-full rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold py-4 text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-green-600/25"
+              >
+                I understand — Let me in 🚀
+              </button>
+              <p className="text-center text-xs text-muted-foreground mt-3">This message won&apos;t show again on this device.</p>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* ── Beta Banner ── */}
       <div className="bg-green-600 text-white text-center py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-3 flex-wrap">
