@@ -15,7 +15,7 @@ import Toaster from '@/components/ui/Toaster';
 import SimHub from '@/components/sim/SimHub';
 import SceneView from '@/components/sim/SceneView';
 
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight, LayoutDashboard, Terminal, Bot } from 'lucide-react';
 import { useFeedbackStore } from '@/stores/feedbackStore';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -106,20 +106,95 @@ function SignUpWall() {
   );
 }
 
+type MobileTab = 'canvas' | 'code' | 'ai' | 'console';
+
 export default function LabPage() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>('canvas');
   const user = useAuthStore((s) => s.user);
 
-  // Wait for client hydration before checking auth (authStore is localStorage-backed)
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;   // avoid SSR flash
+  useEffect(() => {
+    setMounted(true);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  if (!mounted) return null;
   if (!user) return <SignUpWall />;
 
+  /* ── Mobile layout ── */
+  if (isMobile) {
+    return (
+      <div className="flex h-[100dvh] flex-col bg-background text-foreground overflow-hidden">
+        <AutoLoader />
+        <WelcomeModal />
+        <GuidedTour />
+        <TutorialOverlay />
+        <ContextualPrompt />
+        <Toaster />
+        <SimHub />
+        <TopBar />
+        <BetaBanner />
+
+        {/* Main content area */}
+        <div className="flex-1 overflow-hidden relative">
+          {/* Canvas tab */}
+          <div className={`absolute inset-0 flex flex-col ${mobileTab === 'canvas' ? 'flex' : 'hidden'}`}>
+            <CanvasArea />
+            <SceneView />
+          </div>
+
+          {/* Code tab */}
+          <div className={`absolute inset-0 ${mobileTab === 'code' ? 'flex' : 'hidden'}`}>
+            <RightPanel defaultTab="editor" />
+          </div>
+
+          {/* AI tab */}
+          <div className={`absolute inset-0 ${mobileTab === 'ai' ? 'flex' : 'hidden'}`}>
+            <RightPanel defaultTab="ai" />
+          </div>
+
+          {/* Console tab */}
+          <div className={`absolute inset-0 ${mobileTab === 'console' ? 'flex' : 'hidden'}`}>
+            <Console />
+          </div>
+        </div>
+
+        {/* Bottom tab bar */}
+        <nav className="shrink-0 flex border-t border-border bg-background">
+          {([
+            { tab: 'canvas',  icon: LayoutDashboard, label: 'Canvas'  },
+            { tab: 'code',    icon: Code,            label: 'Code'    },
+            { tab: 'ai',      icon: Bot,             label: 'AI'      },
+            { tab: 'console', icon: Terminal,        label: 'Console' },
+          ] as { tab: MobileTab; icon: React.ElementType; label: string }[]).map(({ tab, icon: Icon, label }) => (
+            <button
+              key={tab}
+              onClick={() => setMobileTab(tab)}
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+                mobileTab === tab
+                  ? 'text-green-400 border-t-2 border-green-400 -mt-px'
+                  : 'text-muted-foreground hover:text-foreground border-t-2 border-transparent -mt-px'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  }
+
+  /* ── Desktop layout ── */
   return (
-    <div className="flex h-screen min-w-[1024px] flex-col">
+    <div className="flex h-screen flex-col">
       <AutoLoader />
       <WelcomeModal />
       <GuidedTour />
@@ -147,9 +222,7 @@ export default function LabPage() {
         {/* Center */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <CanvasArea />
-          {/* Live scene view — shows physical environment reacting to simulation */}
           <SceneView />
-          {/* Console */}
           {consoleOpen ? (
             <div className="relative">
               <button onClick={() => setConsoleOpen(false)} className="absolute top-1 right-2 z-10 p-1 rounded hover:bg-accent transition-colors" aria-label="Collapse console">
@@ -177,7 +250,6 @@ export default function LabPage() {
             <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
           </button>
         )}
-
       </div>
     </div>
   );

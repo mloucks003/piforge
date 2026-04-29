@@ -5,6 +5,7 @@ import {
   Play, Pause, Square, Download,
   Cpu, Loader2, Image, FileText, RefreshCw,
   Undo2, Redo2, FolderOpen, ChevronDown, HelpCircle, Home, Building2, MessageSquare, Globe2,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useSimHubStore } from '@/stores/simHubStore';
 import { useFeedbackStore } from '@/stores/feedbackStore';
@@ -55,6 +56,7 @@ export default function TopBar() {
   const engineRef = useRef<SimulationEngine | null>(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [boardMenuOpen, setBoardMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const user      = useAuthStore((s) => s.user);
   const openModal = useAuthStore((s) => s.openModal);
   const undo      = useProjectStore((s) => s.undo);
@@ -342,10 +344,11 @@ export default function TopBar() {
         )}
       </div>
 
-      {/* Right: undo/redo · projects · export · new · user */}
+      {/* Right: undo/redo · projects · ⋯ more · worlds · feedback · user */}
       <div className="flex items-center gap-1">
+
         {/* ── Undo / Redo ── */}
-        <div className="flex items-center border-r border-border pr-1 mr-1">
+        <div className="hidden sm:flex items-center border-r border-border pr-1 mr-1">
           <button onClick={undo} disabled={past.length === 0} title="Undo (Ctrl+Z)"
             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-30">
             <Undo2 className="h-4 w-4" />
@@ -355,138 +358,128 @@ export default function TopBar() {
             <Redo2 className="h-4 w-4" />
           </button>
         </div>
+
         {/* ── Project Manager ── */}
         <button onClick={openProjectManager} title="Projects (Ctrl+S to save)"
-          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+          className="hidden sm:flex items-center gap-1.5 rounded-md px-2 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
           <FolderOpen className="h-4 w-4" />
-          <span className="text-[11px] font-medium hidden lg:block">Projects</span>
+          <span className="text-[11px] font-medium hidden xl:block">Projects</span>
         </button>
+
+        {/* ── ⋯ More menu (Export, New, Environments, Tour) ── */}
         <div className="relative">
           <button
-            onClick={() => setExportMenuOpen((v) => !v)}
+            onClick={() => setMoreMenuOpen(v => !v)}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            aria-label="Export"
-            aria-expanded={exportMenuOpen}
+            title="More options"
           >
-            <Download className="h-4 w-4" />
+            <MoreHorizontal className="h-4 w-4" />
           </button>
-          {exportMenuOpen && (
+          {moreMenuOpen && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setExportMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-md border border-border bg-background shadow-lg py-1">
+              <div className="fixed inset-0 z-40" onClick={() => setMoreMenuOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-xl border border-border bg-background shadow-xl py-1.5 overflow-hidden">
+
+                {/* New Project */}
                 <button
-                  onClick={handleExportPng}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                  onClick={() => { setMoreMenuOpen(false); if (confirm('Clear everything and start fresh?')) { useProjectStore.setState({ components: {}, breadboards: {}, wires: {}, pinStates: {}, code: '', consoleOutput: [], simulationState: 'idle' }); } }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
                 >
-                  <Image className="h-4 w-4" />
-                  Export as PNG
+                  <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" /> New Project
+                </button>
+
+                {/* Projects (mobile only) */}
+                <button
+                  onClick={() => { setMoreMenuOpen(false); openProjectManager(); }}
+                  className="flex sm:hidden w-full items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                >
+                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" /> Projects
+                </button>
+
+                <div className="my-1 border-t border-border/60" />
+
+                {/* Export PNG */}
+                <button
+                  onClick={() => { setMoreMenuOpen(false); handleExportPng(); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                >
+                  <Image className="h-3.5 w-3.5 text-muted-foreground" /> Export as PNG
+                </button>
+                {/* Export Build Guide */}
+                <button
+                  onClick={() => { setMoreMenuOpen(false); handleExportBuildGuide(); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                >
+                  <FileText className="h-3.5 w-3.5 text-muted-foreground" /> Export Build Guide
+                </button>
+
+                <div className="my-1 border-t border-border/60" />
+
+                {/* Environments */}
+                <div className="px-3 pt-1 pb-0.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Floor Plans</div>
+                <button
+                  onClick={() => {
+                    setMoreMenuOpen(false);
+                    const next = activeEnvironment === 'home' ? null : 'home';
+                    setActiveEnvironment(next);
+                    if (next === 'home') {
+                      toast.info('Smart Home floor plan enabled', { icon: '🏠', duration: 2500 });
+                      const homeProject = projects.find(p => p.id === 'smart-home-hub');
+                      if (homeProject) showPrompt({ key: 'env-home', icon: '🏠', title: 'Want a guided walkthrough?', body: "Load the Smart Home Hub project to see PIR motion, DHT22, and MQTT lighting.", primaryLabel: '✨ Load Smart Home Hub', secondaryLabel: 'Just the floor plan', onPrimary: () => { setCode(homeProject.code); toast.success('Smart Home Hub loaded!', { icon: '🏠', duration: 4000 }); } });
+                    }
+                  }}
+                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent transition-colors ${activeEnvironment === 'home' ? 'text-green-400 font-semibold' : 'text-foreground'}`}
+                >
+                  <Home className="h-3.5 w-3.5" /> Smart Home {activeEnvironment === 'home' && '✓'}
                 </button>
                 <button
-                  onClick={handleExportBuildGuide}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                  onClick={() => {
+                    setMoreMenuOpen(false);
+                    const next = activeEnvironment === 'office' ? null : 'office';
+                    setActiveEnvironment(next);
+                    if (next === 'office') {
+                      toast.info('Smart Office floor plan enabled', { icon: '🏢', duration: 2500 });
+                      const officeProject = projects.find(p => p.id === 'smart-office');
+                      if (officeProject) showPrompt({ key: 'env-office', icon: '🏢', title: 'Want a guided walkthrough?', body: "Load the Smart Office project to see occupancy, HVAC, and energy tracking.", primaryLabel: '✨ Load Smart Office', secondaryLabel: 'Just the floor plan', onPrimary: () => { setCode(officeProject.code); toast.success('Smart Office loaded!', { icon: '🏢', duration: 4000 }); } });
+                    }
+                  }}
+                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent transition-colors ${activeEnvironment === 'office' ? 'text-blue-400 font-semibold' : 'text-foreground'}`}
                 >
-                  <FileText className="h-4 w-4" />
-                  Export Build Guide
+                  <Building2 className="h-3.5 w-3.5" /> Smart Office {activeEnvironment === 'office' && '✓'}
+                </button>
+
+                <div className="my-1 border-t border-border/60" />
+
+                {/* Tour */}
+                <button
+                  onClick={() => { setMoreMenuOpen(false); startTour(); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" /> Guided Tour
                 </button>
               </div>
             </>
           )}
         </div>
-        <button
-          onClick={() => { if (confirm('Clear everything and start fresh?')) { useProjectStore.setState({ components: {}, breadboards: {}, wires: {}, pinStates: {}, code: '', consoleOutput: [], simulationState: 'idle' }); } }}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          aria-label="New Project"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </button>
 
-        {/* ── Environment picker ── */}
-        <div data-tour="env-picker" className="flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5" title="Smart Home / Office floor plan overlay">
-          <button
-            onClick={() => {
-              const next = activeEnvironment === 'home' ? null : 'home';
-              setActiveEnvironment(next);
-              if (next === 'home') {
-                toast.info('Smart Home floor plan enabled', { icon: '🏠', duration: 2500 });
-                const homeProject = projects.find(p => p.id === 'smart-home-hub');
-                if (homeProject) {
-                  showPrompt({
-                    key: 'env-home',
-                    icon: '🏠',
-                    title: 'Want a guided walkthrough?',
-                    body: "You've opened the Smart Home floor plan. Load the Smart Home Hub project to see how PIR motion, DHT22 temperature, and MQTT-controlled lighting come together.",
-                    primaryLabel: '✨ Load Smart Home Hub',
-                    secondaryLabel: 'Just the floor plan',
-                    onPrimary: () => {
-                      setCode(homeProject.code);
-                      toast.success('Smart Home Hub loaded! Check the Projects tab for wiring steps.', { icon: '🏠', duration: 4000 });
-                    },
-                  });
-                }
-              }
-            }}
-            className={`rounded p-1.5 transition-colors ${activeEnvironment === 'home' ? 'bg-green-500/20 text-green-400' : 'text-muted-foreground hover:text-foreground'}`}
-            title="Smart Home floor plan"
-          >
-            <Home className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => {
-              const next = activeEnvironment === 'office' ? null : 'office';
-              setActiveEnvironment(next);
-              if (next === 'office') {
-                toast.info('Smart Office floor plan enabled', { icon: '🏢', duration: 2500 });
-                const officeProject = projects.find(p => p.id === 'smart-office');
-                if (officeProject) {
-                  showPrompt({
-                    key: 'env-office',
-                    icon: '🏢',
-                    title: 'Want a guided walkthrough?',
-                    body: "You've opened the Smart Office floor plan. Load the Smart Office Automation project to see occupancy detection, HVAC control, energy tracking, and facility API logging.",
-                    primaryLabel: '✨ Load Smart Office',
-                    secondaryLabel: 'Just the floor plan',
-                    onPrimary: () => {
-                      setCode(officeProject.code);
-                      toast.success('Smart Office Automation loaded! Check the Projects tab for wiring steps.', { icon: '🏢', duration: 4000 });
-                    },
-                  });
-                }
-              }
-            }}
-            className={`rounded p-1.5 transition-colors ${activeEnvironment === 'office' ? 'bg-blue-500/20 text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}
-            title="Smart Office floor plan"
-          >
-            <Building2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-
-        {/* ── Tour button ── */}
-        <button
-          onClick={startTour}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          title="Take a guided tour"
-        >
-          <HelpCircle className="h-4 w-4" />
-        </button>
-
-        {/* ── Worlds / Sim Hub button ── */}
+        {/* ── Worlds / Sim Hub ── */}
         <button
           onClick={showSimHub}
-          className="flex items-center gap-1.5 rounded-lg border border-green-500/40 bg-green-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-green-400 hover:bg-green-500/20 transition-colors"
-          title="Choose a simulation world — Smart Home, Robot, Farm, Network Lab…"
+          className="flex items-center gap-1.5 rounded-lg border border-green-500/40 bg-green-500/10 px-2 py-1.5 text-[11px] font-semibold text-green-400 hover:bg-green-500/20 transition-colors"
+          title="Choose a simulation world"
         >
           <Globe2 className="h-3.5 w-3.5" />
-          Worlds
+          <span className="hidden md:inline">Worlds</span>
         </button>
 
-        {/* ── Feedback button ── */}
+        {/* ── Feedback ── */}
         <button
           onClick={openFeedback}
-          className="flex items-center gap-1.5 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-yellow-400 hover:bg-yellow-500/20 transition-colors"
-          title="Send feedback or report a bug — earn a lifetime license!"
+          className="flex items-center gap-1.5 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-2 py-1.5 text-[11px] font-semibold text-yellow-400 hover:bg-yellow-500/20 transition-colors"
+          title="Send feedback or report a bug"
         >
           <MessageSquare className="h-3.5 w-3.5" />
-          Feedback
+          <span className="hidden md:inline">Feedback</span>
         </button>
 
         {/* ── User / Auth ── */}
@@ -500,7 +493,7 @@ export default function TopBar() {
               <div className="w-6 h-6 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-[11px] font-bold text-green-400">
                 {user.name[0].toUpperCase()}
               </div>
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${PLAN_COLORS[user.plan]}`}>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full hidden sm:inline ${PLAN_COLORS[user.plan]}`}>
                 {user.plan.charAt(0).toUpperCase() + user.plan.slice(1)}
               </span>
             </button>

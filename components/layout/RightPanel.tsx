@@ -230,8 +230,8 @@ function PropertiesTab() {
   );
 }
 
-export default function RightPanel() {
-  const [activeTab, setActiveTab] = useState<Tab>('editor');
+export default function RightPanel({ defaultTab }: { defaultTab?: Tab } = {}) {
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab ?? 'editor');
 
   // Listen for SimHub tab-switch requests (e.g. after launching a scenario)
   useEffect(() => {
