@@ -15,7 +15,7 @@ import Toaster from '@/components/ui/Toaster';
 import SimHub from '@/components/sim/SimHub';
 import SceneView from '@/components/sim/SceneView';
 
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight, LayoutDashboard, Terminal, Bot } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, ChevronDown, ChevronUp, X, Cpu, Zap, Code, Cable, Sparkles, ArrowRight, LayoutDashboard, Terminal, Bot, Package } from 'lucide-react';
 import { useFeedbackStore } from '@/stores/feedbackStore';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -106,7 +106,7 @@ function SignUpWall() {
   );
 }
 
-type MobileTab = 'canvas' | 'code' | 'ai' | 'console';
+type MobileTab = 'canvas' | 'parts' | 'code' | 'ai' | 'console';
 
 export default function LabPage() {
   const [leftOpen, setLeftOpen] = useState(true);
@@ -155,6 +155,11 @@ export default function LabPage() {
             <SceneView />
           </div>
 
+          {/* Parts tab */}
+          <div className={`absolute inset-0 overflow-y-auto ${mobileTab === 'parts' ? 'flex flex-col' : 'hidden'}`}>
+            <Sidebar />
+          </div>
+
           {/* Code tab */}
           <div className={`absolute inset-0 ${mobileTab === 'code' ? 'flex' : 'hidden'}`}>
             <RightPanel defaultTab="editor" />
@@ -175,8 +180,9 @@ export default function LabPage() {
         <nav className="shrink-0 flex border-t border-border bg-background">
           {([
             { tab: 'canvas',  icon: LayoutDashboard, label: 'Canvas'  },
-            { tab: 'code',    icon: Code,            label: 'Code'    },
+            { tab: 'parts',   icon: Package,         label: 'Parts'   },
             { tab: 'ai',      icon: Bot,             label: 'AI'      },
+            { tab: 'code',    icon: Code,            label: 'Code'    },
             { tab: 'console', icon: Terminal,        label: 'Console' },
           ] as { tab: MobileTab; icon: React.ElementType; label: string }[]).map(({ tab, icon: Icon, label }) => (
             <button
