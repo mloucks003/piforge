@@ -176,8 +176,9 @@ export default function LabPage() {
           </div>
         </div>
 
-        {/* Bottom tab bar */}
-        <nav className="shrink-0 flex border-t border-border bg-background">
+        {/* Bottom tab bar — pb accounts for iOS home indicator */}
+        <nav className="shrink-0 flex border-t border-border bg-background"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {([
             { tab: 'canvas',  icon: LayoutDashboard, label: 'Canvas'  },
             { tab: 'parts',   icon: Package,         label: 'Parts'   },

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/auth/AuthProvider";
@@ -12,6 +12,12 @@ const SITE_NAME = "PiForge";
 const TITLE = "PiForge — Free Online Raspberry Pi & Arduino Simulator";
 const DESCRIPTION =
   "Simulate Raspberry Pi, Arduino Uno, and Pi Pico W in your browser. Drag-and-drop circuits, run real Python and C++ code, and build Smart Home IoT projects — no hardware required. Free during beta.";
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',   // lets env(safe-area-inset-*) work on iOS notch/home-bar devices
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
