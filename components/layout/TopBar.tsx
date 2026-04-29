@@ -216,11 +216,11 @@ export default function TopBar() {
       <div className="flex items-center gap-4">
         <div data-tour="logo" className="flex items-center gap-2 font-semibold text-foreground">
           <Cpu className="h-5 w-5 text-green-500" />
-          <span>PiForge</span>
+          <span className="hidden sm:inline">PiForge</span>
         </div>
 
-        {/* Board selector dropdown */}
-        <div className="relative" data-tour="board-selector">
+        {/* Board selector dropdown — hidden on mobile (available in ⋯ More) */}
+        <div className="hidden md:block relative" data-tour="board-selector">
           <button
             onClick={() => setBoardMenuOpen(o => !o)}
             className="flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
@@ -308,7 +308,7 @@ export default function TopBar() {
         <button
           onClick={handlePause}
           disabled={!isRunning}
-          className={`rounded-md p-1.5 transition-colors ${
+          className={`hidden sm:flex rounded-md p-1.5 transition-colors ${
             !isRunning
               ? 'text-muted-foreground/40 cursor-not-allowed'
               : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
@@ -331,7 +331,7 @@ export default function TopBar() {
         </button>
         {simulationState !== 'idle' && (
           <span
-            className={`ml-1 text-xs capitalize ${
+            className={`hidden sm:inline ml-1 text-xs capitalize ${
               isRunning
                 ? 'text-green-400'
                 : isPaused
@@ -379,6 +379,24 @@ export default function TopBar() {
             <>
               <div className="fixed inset-0 z-40" onClick={() => setMoreMenuOpen(false)} />
               <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-xl border border-border bg-background shadow-xl py-1.5 overflow-hidden">
+
+                {/* ── Board selector (mobile only, not shown on md+) ── */}
+                <div className="md:hidden">
+                  <div className="px-3 pt-1.5 pb-0.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Board</div>
+                  {BOARD_CATALOG.map(b => (
+                    <button key={b.id}
+                      onClick={() => { setMoreMenuOpen(false); if (b.id !== boardModel) { setBoardModel(b.id); toast.success(`Switched to ${b.name}`, { icon: '🖥️', duration: 2500 }); } }}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-sm transition-colors ${boardModel === b.id ? 'text-green-400 font-semibold bg-green-500/5' : 'text-foreground hover:bg-accent'}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Cpu className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        {b.name}
+                      </span>
+                      {boardModel === b.id && <span className="text-green-400">✓</span>}
+                    </button>
+                  ))}
+                  <div className="my-1 border-t border-border/60" />
+                </div>
 
                 {/* New Project */}
                 <button

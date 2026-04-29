@@ -30,7 +30,7 @@ function BetaBanner() {
   if (!visible) return null;
   function dismiss() { localStorage.setItem(BETA_DISMISSED_KEY, '1'); setVisible(false); }
   return (
-    <div className="shrink-0 flex items-center justify-between gap-3 bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-1.5">
+    <div className="shrink-0 hidden md:flex items-center justify-between gap-3 bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-1.5">
       <p className="text-[11px] text-yellow-300 leading-snug">
         🚧 <strong>PiForge is in public beta</strong> — features may change and bugs may exist.
         Everything is <strong>free</strong> during beta! Use code{' '}
@@ -114,7 +114,7 @@ export default function LabPage() {
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileTab, setMobileTab] = useState<MobileTab>('canvas');
+  const [mobileTab, setMobileTab] = useState<MobileTab>('ai');
   const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
@@ -145,7 +145,12 @@ export default function LabPage() {
         {/* Main content area */}
         <div className="flex-1 overflow-hidden relative">
           {/* Canvas tab */}
-          <div className={`absolute inset-0 flex flex-col ${mobileTab === 'canvas' ? 'flex' : 'hidden'}`}>
+          <div className={`absolute inset-0 flex flex-col ${mobileTab === 'canvas' ? '' : 'hidden'}`}>
+            {/* Touch hint — drag-and-drop requires desktop */}
+            <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-blue-500/10 border-b border-blue-500/20 text-[11px] text-blue-300">
+              <span>💡</span>
+              <span>Pinch to zoom · drag to pan. Use the <strong className="text-white">AI tab</strong> to build circuits on mobile.</span>
+            </div>
             <CanvasArea />
             <SceneView />
           </div>
