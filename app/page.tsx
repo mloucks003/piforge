@@ -20,15 +20,9 @@ const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 export default function LandingPage() {
   const { user, openModal } = useAuthStore();
 
-  // Beta popup
-  const [showBetaPopup, setShowBetaPopup] = useState(false);
-  useEffect(() => {
-    if (!localStorage.getItem('piforge-beta-ack')) setShowBetaPopup(true);
-  }, []);
-  const acknowledgeBeta = () => {
-    localStorage.setItem('piforge-beta-ack', '1');
-    setShowBetaPopup(false);
-  };
+  // Beta popup — show on every visit
+  const [showBetaPopup, setShowBetaPopup] = useState(true);
+  const acknowledgeBeta = () => setShowBetaPopup(false);
 
   // Feedback form state
   const [fbName, setFbName]       = useState('');
@@ -119,7 +113,7 @@ export default function LandingPage() {
               >
                 I understand — Let me in 🚀
               </button>
-              <p className="text-center text-xs text-muted-foreground mt-3">This message won&apos;t show again on this device.</p>
+              <p className="text-center text-xs text-muted-foreground mt-3">This message appears every visit while PiForge is in beta.</p>
             </div>
           </motion.div>
         </div>
